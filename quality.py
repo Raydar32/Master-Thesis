@@ -48,6 +48,7 @@ print("----------------------------------------------------")
 
 #df["timestamp"].between_time('18:00', '8:00')
 print("Removing night traffic from 18:00 to 8:00")
+df["timestamp"] = pd.to_datetime(df["timestamp"])
 df = df.set_index('timestamp')
 night = df.between_time('18:00', '8:00')
 df = df.drop(night.index,inplace = True)
