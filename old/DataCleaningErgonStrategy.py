@@ -9,7 +9,26 @@ apply, such as time-delta and protocols to exclude.
 """
 
 import pandas as pd 
+from pathlib import Path
+from DataCleanerInterface import DataCleaner
 
+class ErgonDataCleaner(DataCleaner):
+
+    def cleanDataset(self):
+        print("gigi")
+
+    def getRatio(self):
+        print("gigi")
+    def getBenchmark(self):
+        print("gigi") 
+
+verbose = True
+path = Path("G:/30d_traffic_ergon.csv")
+def vprint(*args, **kwargs):
+    if verbose:
+        print(*args, **kwargs)
+        
+    
 #List of protocols to exclude 
 application_exclusions = ["ms-product-activation",
             "ms-update",
@@ -27,45 +46,34 @@ application_exclusions = ["ms-product-activation",
             "ntp",
             "ping"]
 
-#"G:\\30d_traffic_ergon.csv"
-df = pd.read_csv("G:\\30d_traffic_ergon.csv")
-
-
-#Removing corrupted traffic
+vprint("processing ", path.name)
+df = pd.read_csv(path)
+len_before = len(df)
+vprint("Removing junk data ...")
 df = df[~df.src_port.eq(0)]
 df = df[~df.dst_port.eq(0)]
 df = df[~df.bytes_sent.eq(0)]
 df = df[~df.bytes_recieved.eq(0)]
-#Applying exclusion rules
-print("Applying protocols exclusion rules")
-len_before = len(df)
+
+vprint("Applying protocols exclusion rules ...")
 df = df[~df['application'].isin(application_exclusions)]
-len_after = len(df)
-print("----------------------------------------------------")
-print("Bef: " , len_before , " after: ", len_after)
-print("Removed data : " ,len_before/len_after)
-print("----------------------------------------------------")
 
 
 
-print("Removing night traffic from 18:00 to 8:00")
+
+vprint("Removing night traffic from 18:00 to 8:00")
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 df = df.set_index('timestamp')
 night = df.between_time('18:00', '8:00')
 df = df.drop(night.index)
 df = df.reset_index()
-len_after = len(df)
-print("----------------------------------------------------")
-print("Bef: " , len_before , " after: ", len_after)
-print("Removed data : " ,len_before/len_after)
-print("----------------------------------------------------")
+
 
 
 
 
 k = 2
-print("Identifying sources with less than " , k , " hours of traffic ")
-
+vprint("Identifying sources with less than " , k , " hours of traffic ")
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 grouped = df.groupby(pd.Grouper(freq="1H", key="timestamp"))
 i = 0
@@ -91,25 +99,16 @@ for ip in df["src_ip"].unique():
     found = 0                          
       
     
-print("Removing IPs with less then ", k , " hours of traffic ")
+
 df = df[~df['src_ip'].isin(insufficient)]
-len_after = len(df)
-print("----------------------------------------------------")
-print("Bef: " , len_before , " after: ", len_after)
-print("Removed data : " ,len_before/len_after)
-print("----------------------------------------------------")
 df = df.sort_values(by='timestamp', ascending=True)
+len_after = len(df)
+vprint("Dataset shrinked from ",len_before," to ", len_after, " ratio: " , round(len_before/len_after,2)*100, "%")
 
-
-
-#Creare un nuovo CSV: Dataset_refined.csv
-            
-
-#Temporary
 for label in sufficient:
     print(label, "  ", len(df.loc[df["src_ip"]==label]))
     
-    
+target = Path(path.name + "_refined")
 df.to_csv("dataset_refined.csv",index= False)
     
     
