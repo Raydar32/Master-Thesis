@@ -38,15 +38,16 @@ class ErgonDataCleaner(DataCleaner):
         self.df = self.df[~self.df['application'].isin(application_exclusions)]
     
         self.vprint("Removing night traffic from 18:00 to 8:00")
-        self.df["timestamp"] = pd.to_datetime(self.df["timestamp"])
+        self.df["timestamp"] = pd.to_datetime(self.df["timestamp"],utc=True)
         self.df = self.df.set_index('timestamp')
         night = self.df.between_time('18:00', '8:00')
-        self.df = self.df.drop(night.index)
-        self.df = self.df.reset_index()
-        
+        self.df = [~self.df.index.isin(night.index)]
+        self.df = self.df.reset_index()        
         k = 2
+        
+        #Qui ci sono problemi, tronca il mio ip 
         self.vprint("Identifying sources with less than " , k , " hours of traffic ")
-        self.df["timestamp"] = pd.to_datetime(self.df["timestamp"])
+        self.df["timestamp"] = pd.to_datetime(self.df["timestamp"],utc=True)
         grouped = self.df.groupby(pd.Grouper(freq="1H", key="timestamp"))
         i = 0
         sufficient = []
@@ -55,7 +56,8 @@ class ErgonDataCleaner(DataCleaner):
             #print ("working ", ip ," ",i, " di ", len(df["src_ip"].unique()))
             found = 0
             i = i + 1 
-            for hour in grouped.groups.keys():            
+            for hour in grouped.groups.keys():
+        
                 try:
                     a = grouped.get_group(hour)
                     a = a.loc[a["src_ip"]==ip]

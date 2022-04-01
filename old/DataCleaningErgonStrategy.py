@@ -10,20 +10,10 @@ apply, such as time-delta and protocols to exclude.
 
 import pandas as pd 
 from pathlib import Path
-from DataCleanerInterface import DataCleaner
 
-class ErgonDataCleaner(DataCleaner):
-
-    def cleanDataset(self):
-        print("gigi")
-
-    def getRatio(self):
-        print("gigi")
-    def getBenchmark(self):
-        print("gigi") 
 
 verbose = True
-path = Path("G:/30d_traffic_ergon.csv")
+path = Path("C:\\InProgress\\Tesi\\30.03.to.20.02.csv")
 def vprint(*args, **kwargs):
     if verbose:
         print(*args, **kwargs)
@@ -80,7 +70,7 @@ i = 0
 sufficient = []
 insufficient = []
 for ip in df["src_ip"].unique():
-    #print ("working ", ip ," ",i, " di ", len(df["src_ip"].unique()))
+    print ("working ", ip ," ",i, " di ", len(df["src_ip"].unique()))
     found = 0
     i = i + 1 
     for hour in grouped.groups.keys():            
@@ -109,7 +99,7 @@ for label in sufficient:
     print(label, "  ", len(df.loc[df["src_ip"]==label]))
     
 target = Path(path.name + "_refined")
-df.to_csv("dataset_refined.csv",index= False)
+df.to_csv("C:\\InProgress\\Tesi\\30.03.to.20.02_refined.csv",index= False)
     
     
     
