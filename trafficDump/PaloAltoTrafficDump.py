@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 
 import requests
@@ -11,6 +12,7 @@ import pandas as pd
 import datetime
 import time
 from datetime import datetime, timedelta
+import sys, getopt
 
 urllib3.disable_warnings()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -46,6 +48,7 @@ def get_chunk(start_time,end_time):
             dst_ip = y["_source"]["server"]["ip"]
             src_port = y["_source"]["client"]["port"]
             dst_port = y["_source"]["server"]["port"]
+
             transport = y["_source"]["network"]["transport"]
             application = y["_source"]["network"]["application"]
             bytes_sent = y["_source"]["client"]["packets"]
@@ -72,12 +75,13 @@ def get_chunk(start_time,end_time):
 
 
 
-#Script per dumpare n giorni di traffico a slot di minute_back
-num_days=30
-minutes_back = 5
-n_blocks= num_days*(1440/minutes_back)
 
-start_ts = "2022-03-18T18:00:00.000+01:00"
+#Script per dumpare n giorni di traffico a slot di minute_back
+num_days=2
+minutes_back = 10
+n_blocks= num_days*(1440/minutes_back)
+filename = "20_gg_blocco2_starting_30_03.csv"
+start_ts = "2022-02-19T01:00:00.000+01:00"
 start_ts_datetime = datetime.fromisoformat(start_ts)
 end_ts_datetime = start_ts_datetime - timedelta(minutes=minutes_back)
 df = get_chunk(end_ts_datetime.isoformat(),start_ts_datetime.isoformat())
@@ -95,24 +99,25 @@ print("--------------------------------------")
 salva = 7
 contatore = 0
 start_time = time.time() #Benchmark
+
+
+
 for i in range(1,int(n_blocks)):    
+    start_time2 = time.time()
     contatore = contatore + 1 
     start_ts_datetime = end_ts_datetime
     end_ts_datetime = start_ts_datetime - timedelta(minutes=minutes_back)
     df1 = get_chunk(end_ts_datetime.isoformat(),start_ts_datetime.isoformat())    
-    df = df.append(df1)
-    if contatore%salva==0:
-        df = df.sort_values(by='timestamp', ascending=True)
-        df.to_csv("C:\InProgress\Tesi\dataset_big.csv",index= False)
-    print("Blocco: ", i ,"di ", int(n_blocks), "da: ",end_ts_datetime.isoformat(),start_ts_datetime.isoformat(), "a", end_ts_datetime.isoformat(), " di 140 dataset: ",len(df))
+    df = pd.concat([df,df1], sort=False)
+    print("Blocco" , i , " di ",int(n_blocks), " righe "  , len(df), " tempo ",(time.time() - start_time2) , "s")
 
 print("Sorting and saving")
 df = df.sort_values(by='timestamp', ascending=True)
-df.to_csv("C:\InProgress\Tesi\dataset_big.csv",index= False)
+df.to_csv(filename,index= False)
+
 
 print("-----------------------------")
 print("Process terminated, dataset len: ", len(df))
 print("time: ", (time.time() - start_time) , "s")
 print("-----------------------------")
-done = input("")
 
