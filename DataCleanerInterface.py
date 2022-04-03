@@ -20,6 +20,7 @@ class DataCleaner(ABC):
         self.datasetPath = Path(datasetPath)
         self.df = pd.read_csv(datasetPath)
         self.before_len = len(self.df)
+        return self.df
         
     def setOutput(self,output):
         self.outputPath = Path(output)

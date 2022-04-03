@@ -28,6 +28,8 @@ class ErgonDataCleaner(DataCleaner):
     
         self.vprint("processing ", self.datasetPath.name)    
      
+        self.vprint("Removing duplicate data ", len(self.df)-len(self.df.drop_duplicates()))  
+        self.df = self.df.drop_duplicates()
         self.vprint("Removing junk data ...")
         self.df =  self.df[~ self.df.src_port.eq(0)]
         self.df =  self.df[~ self.df.dst_port.eq(0)]
@@ -48,25 +50,20 @@ class ErgonDataCleaner(DataCleaner):
         #Qui ci sono problemi, tronca il mio ip 
         self.vprint("Identifying sources with more then " , k , " hours of traffic ")
         self.df["timestamp"] = pd.to_datetime(self.df["timestamp"],utc=True)
-        
-        #q = self.df.loc[self.df["src_ip"]=="192.168.121.47"]["timestamp"].iat[-1] - self.df.loc[self.df["src_ip"]=="192.168.121.47"]["timestamp"].iat[0] 
-        
-        grouped = self.df.groupby(pd.Grouper(freq="1H", key="timestamp"))
-        i = 0
+
         sufficient = []
         insufficient = []
         for ip in self.df["src_ip"].unique():
            
             delta = self.df.loc[self.df["src_ip"]==ip]["timestamp"].iat[-1] - self.df.loc[self.df["src_ip"]==ip]["timestamp"].iat[0] 
             
-            dbgflag = False
+
             if delta > timedelta(hours=k):
                 sufficient.append(ip)
-                dbgflag = True
+
             else:
                 insufficient.append(ip)
-            print(ip, " ",dbgflag)
-                
+
     
                 
         self.df = self.df[~self.df['src_ip'].isin(insufficient)]

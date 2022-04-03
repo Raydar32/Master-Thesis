@@ -1,0 +1,1 @@
+f.groupby('ip')[['sent', 'received']].agg('sum').sum(axis='columns')
