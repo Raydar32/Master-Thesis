@@ -112,7 +112,7 @@ from sklearn.metrics import davies_bouldin_score
 from kneed import KneeLocator
 
 inertia = []
-for candidate in range(2,50):
+for candidate in range(2,30):
     
     km = KMeans(n_clusters=candidate,init="k-means++",n_init=1000)
     km.fit(extracted)
@@ -153,7 +153,7 @@ from sklearn.cluster import DBSCAN
 
 
 scores = {0:0}
-for j in range(1,50):    
+for j in range(1,30):    
     nn = extracted.shape[1]*j
     nbrs = NearestNeighbors(n_neighbors=nn, algorithm='ball_tree').fit(extracted)
     distances, indices = nbrs.kneighbors(extracted)
