@@ -48,7 +48,7 @@ def get_chunk(start_time,end_time):
             dst_ip = y["_source"]["server"]["ip"]
             src_port = y["_source"]["client"]["port"]
             dst_port = y["_source"]["server"]["port"]
-
+            packets = y["_source"]["client"]["packets"]
             transport = y["_source"]["network"]["transport"]
             application = y["_source"]["network"]["application"]
             bytes_sent = y["_source"]["client"]["packets"]
@@ -65,7 +65,9 @@ def get_chunk(start_time,end_time):
                    "transport":transport,
                    "application":application,
                    "bytes_sent":bytes_sent,
-                   "bytes_recieved":bytes_recieved}
+                   "bytes_recieved":bytes_recieved,
+                   "packets":packets,
+                   }
             row_list.append(row)
             #print("[",i,"]",src_ip, "-> ", dst_ip, " : ", dst_port)
     df = pd.DataFrame(row_list)   
@@ -77,11 +79,11 @@ def get_chunk(start_time,end_time):
 
 
 #Script per dumpare n giorni di traffico a slot di minute_back
-num_days=2
+num_days=45
 minutes_back = 10
 n_blocks= num_days*(1440/minutes_back)
-filename = "20_gg_blocco2_starting_30_03.csv"
-start_ts = "2022-02-19T01:00:00.000+01:00"
+filename = "1.04to20.02.csv"
+start_ts = "2022-04-01T01:00:00.000+01:00"
 start_ts_datetime = datetime.fromisoformat(start_ts)
 end_ts_datetime = start_ts_datetime - timedelta(minutes=minutes_back)
 df = get_chunk(end_ts_datetime.isoformat(),start_ts_datetime.isoformat())
