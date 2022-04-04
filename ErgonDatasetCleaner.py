@@ -33,8 +33,9 @@ class ErgonDataCleaner(DataCleaner):
         self.vprint("Removing junk data ...")
         self.df =  self.df[~ self.df.src_port.eq(0)]
         self.df =  self.df[~ self.df.dst_port.eq(0)]
-        self.df =  self.df[~ self.df.bytes_sent.eq(0)]
-        self.df =  self.df[~ self.df.bytes_recieved.eq(0)]
+        self.df =  self.df[~ self.df.bytes_src.eq(0)]
+        self.df =  self.df[~ self.df.bytes_dst.eq(0)]
+        #self.df =  self.df[~ self.df.bytes_recieved.eq(0)]
     
         self.vprint("Applying protocols exclusion rules ...")
         self.df = self.df[~self.df['application'].isin(application_exclusions)]
@@ -44,8 +45,12 @@ class ErgonDataCleaner(DataCleaner):
         self.df = self.df.set_index('timestamp')
         night = self.df.between_time('18:00', '8:00')
         self.df = self.df[~self.df.index.isin(night.index)]
-        self.df = self.df.reset_index()        
-        k = 3
+        self.vprint("Removing non-business days")
+        notBusinessDay = self.df[self.df.index.dayofweek >= 5]
+        self.df = self.df[~self.df.index.isin(notBusinessDay.index)]
+        self.df = self.df.reset_index()     
+        
+        k = 2
         
         #Qui ci sono problemi, tronca il mio ip 
         self.vprint("Identifying sources with more then " , k , " hours of traffic ")

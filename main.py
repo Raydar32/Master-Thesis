@@ -9,21 +9,28 @@ from ErgonDatasetCleaner import ErgonDataCleaner
 import pandas as pd 
 import numpy as np
 from sklearn import preprocessing
+from ErgonFeaturesExtractor import extract_features
+from sklearn.decomposition import PCA as sklearnPCA
+import matplotlib.pyplot as plt
+
 #------------------- Pulisco il dataset -------------------
 DataC = ErgonDataCleaner()
 DataC.setVerbose(True)
-DataC.loadDataset("C:\\Users\\Alessandro\\Downloads\\20.02to30.03_r.csv")
-#DataC.cleanDataset()
-#DataC.setOutput("5d_traffic_ergon_refined.csv")
+DataC.loadDataset("G:\\1.04to20.02_1d_test.csv")
+DataC.cleanDataset()
+DataC.setOutput("G:\\1.04to20.02_1d_test_r.csv")
 
 print("Ratio: ", DataC.getRatio())
 
 
-df = pd.read_csv("C:\\Users\\Alessandro\\Downloads\\20.02to30.03_r.csv")
+df = pd.read_csv("G:\\1.04to20.02_1d_test_r.csv")
 
+def reduce():
+    pca = sklearnPCA(n_components=2) #2-dimensional PCA
+    transformed = pd.DataFrame(pca.fit_transform(extracted_kmeans))
+    #plt.scatter(transformed[0], transformed[1], c=extracted_kmeans["c"],cmap='viridis')
+    return transformed
 
-
-#-------------------------- Estrazione di features -----------------------
 def normalize(df):
     result = df.copy()
     for feature_name in df.columns:
@@ -34,57 +41,10 @@ def normalize(df):
 
 
 
-def extract_features(dataset):
-    df_grouped = dataset.groupby("src_ip")
-    extracted = pd.DataFrame()
-    extracted["src_ip"] = df["src_ip"].unique().copy()
-    extracted = extracted.set_index("src_ip")
-    
-    
-    extracted = extracted.join(
-                    df_grouped["dst_ip"].nunique()
-                )
-    
-    extracted = extracted.join(
-                    df_grouped["dst_port"].nunique()
-                )
-    extracted = extracted.join(
-                    df_grouped["bytes_sent"].mean()
-                )
-    extracted = extracted.join(
-                    df_grouped["bytes_recieved"].mean()      
-                )
-
-    extracted = extracted.join(
-                    df_grouped["application"].nunique()
-                )
-    extracted = extracted.join(
-                    df[df["dst_port"]<=1024].groupby("src_ip")["dst_port"]
-                    .nunique()
-                    .rename("small_ports")).replace(np.nan,0)
-    
-
-    extracted = extracted.join(
-                    df[df["dst_port"]>1024].groupby("src_ip")["dst_port"]
-                    .nunique()
-                    .rename("big ports")).replace(np.nan,0)
-    
-    extracted = extracted.join(
-                    df[df["transport"]=="tcp"].groupby("src_ip")["transport"]
-                    .count()
-                    .rename("tcp_num")).replace(np.nan,0)
-    
-    extracted = extracted.join(
-                    df[df["transport"]=="udp"].groupby("src_ip")["transport"]
-                    .count()
-                    .rename("udp_num")).replace(np.nan,0)
-    return extracted
-
-
-
+#-------------------------- Estrazione di features -----------------------
 extracted = pd.DataFrame()
 df["timestamp"] = pd.to_datetime(df["timestamp"])
-grouped = df.groupby(pd.Grouper(freq="1H", key="timestamp"))
+grouped = df.groupby(pd.Grouper(freq="1d", key="timestamp"))
 i = 0
 for hour in grouped.groups.keys():
     esito = False
@@ -114,7 +74,7 @@ from kneed import KneeLocator
 inertia = []
 for candidate in range(2,30):
     
-    km = KMeans(n_clusters=candidate,init="k-means++",n_init=1000)
+    km = KMeans(n_clusters=candidate,init="random",n_init=1000)
     km.fit(extracted)
     labels = km.labels_
     score = silhouette_score(extracted, labels, metric='euclidean')
@@ -126,7 +86,7 @@ for candidate in range(2,30):
 eps1 = KneeLocator(range(1, len(inertia)+1), inertia, curve='convex', direction='decreasing').knee
 print("Epsilon ottimo: ", eps1)
 print("Clusterizzazione finale K-means")
-km = KMeans(n_clusters=eps1,init="k-means++",n_init=20000)
+km = KMeans(n_clusters=eps1,init="k-means++",n_init=2000)
 km.fit(extracted)
 labels = km.labels_
 score = silhouette_score(extracted, labels, metric='euclidean')
@@ -153,7 +113,7 @@ from sklearn.cluster import DBSCAN
 
 
 scores = {0:0}
-for j in range(1,30):    
+for j in range(1,15):    
     nn = extracted.shape[1]*j
     nbrs = NearestNeighbors(n_neighbors=nn, algorithm='ball_tree').fit(extracted)
     distances, indices = nbrs.kneighbors(extracted)

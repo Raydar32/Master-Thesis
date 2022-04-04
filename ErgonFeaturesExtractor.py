@@ -70,27 +70,20 @@ def extract_features(dataset):
         )
         
     #|tot bytes|
+    extracted = extracted.join(
+                    (df_grouped["bytes_src"].sum() + df_grouped["bytes_dst"].sum()).rename("bytes")
+        )
     
     #|tot packets|
-    
-    #|avg bytes|
-    
-    #|avg packets|
-    
-    #|applicaitons|
-    #extracted = extracted.join(
-    #                df_grouped["application"].nunique()
-    #           )
+    extracted = extracted.join(
+                    (df_grouped["packets_src"].sum() + df_grouped["packets_dst"].sum()).rename("packets")
+        )
     
 
-    #|duration|
     extracted = extracted.join(
-                    df_grouped["duration"].mean().rename("avg_duration") 
+                    (df_grouped["duration"].mean()/1000000000).rename("avg_duration") 
                 )
     
     return extracted
 
-
-df = pd.read_csv("C:\\InProgress\\Tesi\\trafficDump\\1.04to20.02_1d_test.csv")
-extracted = extract_features(df)
 
