@@ -44,15 +44,25 @@ def get_chunk(start_time,end_time):
         error_flag = False  #Saltare record incompleti.
         try:
             timestamp = y["_source"]["@timestamp"]
-            src_ip = y["_source"]["client"]["ip"]
-            dst_ip = y["_source"]["server"]["ip"]
-            src_port = y["_source"]["client"]["port"]
-            dst_port = y["_source"]["server"]["port"]
-            packets = y["_source"]["client"]["packets"]
+            src_ip = y["_source"]["source"]["ip"]
+            dst_ip = y["_source"]["destination"]["ip"]
+            
+            src_port = y["_source"]["source"]["port"]
+            dst_port = y["_source"]["destination"]["port"]
+            
+            bytes_src = y["_source"]["source"]["bytes"]
+            bytes_dst = y["_source"]["destination"]["bytes"]
+            
             transport = y["_source"]["network"]["transport"]
+            
             application = y["_source"]["network"]["application"]
-            bytes_sent = y["_source"]["client"]["packets"]
-            bytes_recieved = y["_source"]["server"]["packets"]    
+            
+            packets_src = y["_source"]["source"]["packets"]
+            packets_dst = y["_source"]["destination"]["packets"]
+            
+            
+            duration = y["_source"]["event"]["duration"] 
+
         except:
             #print("[",i,"]  Record Incompleto")
             error_flag = True
@@ -62,11 +72,15 @@ def get_chunk(start_time,end_time):
                    "dst_ip":dst_ip,
                    "src_port":src_port,
                    "dst_port":dst_port,
+                   "bytes_src": bytes_src,
+                   "bytes_dst": bytes_dst,
                    "transport":transport,
-                   "application":application,
-                   "bytes_sent":bytes_sent,
-                   "bytes_recieved":bytes_recieved,
-                   "packets":packets,
+                   "application":application,                  
+ 
+                   "packets_src":packets_src,
+                   "packets_dst":packets_dst,
+                   "duration" :duration
+          
                    }
             row_list.append(row)
             #print("[",i,"]",src_ip, "-> ", dst_ip, " : ", dst_port)
@@ -79,7 +93,7 @@ def get_chunk(start_time,end_time):
 
 
 #Script per dumpare n giorni di traffico a slot di minute_back
-num_days=45
+num_days=20
 minutes_back = 10
 n_blocks= num_days*(1440/minutes_back)
 filename = "1.04to20.02.csv"
