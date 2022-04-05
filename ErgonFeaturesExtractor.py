@@ -62,7 +62,7 @@ def extract_features(dataset):
     extracted = extracted.join(
                     (dataset[ (dataset["dst_port"]==22)].groupby("src_ip")["dst_port"].count()/df_grouped["dst_port"].count()).replace(np.nan,0).rename("ssh_ratio")
                     
-        )
+       )
 
     #|smtp|/|tot|
     extracted = extracted.join(

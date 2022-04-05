@@ -8,28 +8,26 @@ Test file to keep everything together
 from ErgonDatasetCleaner import ErgonDataCleaner
 import pandas as pd 
 import numpy as np
-from sklearn import preprocessing
 from ErgonFeaturesExtractor import extract_features
-from sklearn.decomposition import PCA as sklearnPCA
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from kneed import KneeLocator
+from KMeansClustering import KMeansClustering
 
 #------------------- Pulisco il dataset -------------------
 DataC = ErgonDataCleaner()
 DataC.setVerbose(True)
-DataC.loadDataset("G:\\1.04to20.02_1d_test.csv")
+DataC.loadDataset("C:\\InProgress\\Tesi\\trafficDump\\1.04to20.02.blocco1.csv")
 DataC.cleanDataset()
-DataC.setOutput("G:\\1.04to20.02_1d_test_r.csv")
+DataC.setOutput("C:\\InProgress\\Tesi\\trafficDump\\1.04to20.02.blocco1_r.csv")
 
 print("Ratio: ", DataC.getRatio())
 
 
-df = pd.read_csv("G:\\1.04to20.02_1d_test_r.csv")
+df = pd.read_csv("C:\\InProgress\\Tesi\\trafficDump\\1.04to20.02.blocco1_r.csv")
 
-def reduce():
-    pca = sklearnPCA(n_components=2) #2-dimensional PCA
-    transformed = pd.DataFrame(pca.fit_transform(extracted_kmeans))
-    #plt.scatter(transformed[0], transformed[1], c=extracted_kmeans["c"],cmap='viridis')
-    return transformed
+
 
 def normalize(df):
     result = df.copy()
@@ -41,10 +39,14 @@ def normalize(df):
 
 
 
+        
+
+
+
 #-------------------------- Estrazione di features -----------------------
 extracted = pd.DataFrame()
 df["timestamp"] = pd.to_datetime(df["timestamp"])
-grouped = df.groupby(pd.Grouper(freq="1d", key="timestamp"))
+grouped = df.groupby(pd.Grouper(freq="2h", key="timestamp"))
 i = 0
 for hour in grouped.groups.keys():
     esito = False
@@ -65,34 +67,18 @@ extracted = normalize(extracted)
 
 
 
-##################### --------------------------- K-Means PoC ------------------------ ####################
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
-from sklearn.metrics import davies_bouldin_score
-from kneed import KneeLocator
-
-inertia = []
-for candidate in range(2,30):
-    
-    km = KMeans(n_clusters=candidate,init="random",n_init=1000)
-    km.fit(extracted)
-    labels = km.labels_
-    score = silhouette_score(extracted, labels, metric='euclidean')
-    inertia.append(km.inertia_)
-    print("Optimizing ", candidate , " of ", 30," score ", score)
 
 
 
-eps1 = KneeLocator(range(1, len(inertia)+1), inertia, curve='convex', direction='decreasing').knee
-print("Epsilon ottimo: ", eps1)
-print("Clusterizzazione finale K-means")
-km = KMeans(n_clusters=eps1,init="k-means++",n_init=2000)
-km.fit(extracted)
-labels = km.labels_
-score = silhouette_score(extracted, labels, metric='euclidean')
-print("score: ", score)
-extracted_kmeans = extracted.copy()
-extracted_kmeans["c"] = km.labels_
+KMeans = KMeansClustering()
+KMeans.setVerbose(True)
+KMeans.setData(extracted)
+labeled = KMeans.clusterize()
+score = KMeans.get_score()
+cnum = KMeans.get_c_num()
+print("Clustering k-means: " , cnum, " ",score)
+
+
 
 #clients =  extracted[extracted.index.str.contains("192.168.121")]
 #mgmt =  extracted[extracted.index.str.contains("192.168.111")]

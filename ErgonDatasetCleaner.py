@@ -50,7 +50,7 @@ class ErgonDataCleaner(DataCleaner):
         self.df = self.df[~self.df.index.isin(notBusinessDay.index)]
         self.df = self.df.reset_index()     
         
-        k = 2
+        k = 3
         
         #Qui ci sono problemi, tronca il mio ip 
         self.vprint("Identifying sources with more then " , k , " hours of traffic ")
