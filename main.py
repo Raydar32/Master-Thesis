@@ -18,14 +18,14 @@ from KMeansClustering import KMeansClustering
 #------------------- Pulisco il dataset -------------------
 DataC = ErgonDataCleaner()
 DataC.setVerbose(True)
-DataC.loadDataset("C:\\InProgress\\Tesi\\trafficDump\\1.04to20.02.blocco1.csv")
+DataC.loadDataset("C:\\InProgress\\Tesi\\aprile.csv")
 DataC.cleanDataset()
-DataC.setOutput("C:\\InProgress\\Tesi\\trafficDump\\1.04to20.02.blocco1_r.csv")
+DataC.setOutput("C:\\InProgress\\Tesi\\aprile_r.csv")
 
 print("Ratio: ", DataC.getRatio())
 
 
-df = pd.read_csv("C:\\InProgress\\Tesi\\trafficDump\\1.04to20.02.blocco1_r.csv")
+df = pd.read_csv("C:\\InProgress\\Tesi\\aprile_r.csv")
 
 
 
@@ -46,7 +46,7 @@ def normalize(df):
 #-------------------------- Estrazione di features -----------------------
 extracted = pd.DataFrame()
 df["timestamp"] = pd.to_datetime(df["timestamp"])
-grouped = df.groupby(pd.Grouper(freq="2h", key="timestamp"))
+grouped = df.groupby(pd.Grouper(freq="1h", key="timestamp"))
 i = 0
 for hour in grouped.groups.keys():
     esito = False
@@ -66,6 +66,15 @@ for hour in grouped.groups.keys():
 extracted = normalize(extracted)
 
 
+#----------- Test: rimozione featues non rilevanti -------------
+del extracted["http_ratio"]
+del extracted["dst_ip"]
+del extracted["bytes"]
+del extracted["packets"]
+del extracted["dst_port"]
+del extracted["ssh_ratio"]
+del extracted["avg_duration"]
+del extracted["smtp_ratio"]
 
 
 
