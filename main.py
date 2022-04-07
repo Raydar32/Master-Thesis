@@ -4,23 +4,21 @@ Test file to keep everything together
 """
 
 
-
-from ErgonDatasetCleaner import ErgonDataCleaner
-import pandas as pd 
-import numpy as np
-from ErgonFeaturesExtractor import extract_features
-import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
+from sklearn.cluster import Birch
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import SpectralClustering
+from sklearn.metrics import davies_bouldin_score
 from sklearn.metrics import silhouette_score
-from kneed import KneeLocator
-from KMeansClustering import KMeansClustering
-from scipy import stats
-from sklearn.preprocessing import MaxAbsScaler
-#------------------- Pulisco il dataset -------------------
+import pandas as pd
+from models.KMeansClustering import KMeansClustering
+from dataprocessing.FeatureExtractor import PaloAltoFeatureExtractor
+from dataprocessing.DatasetCleaner import ErgonDataCleaner
+
+# ------------------- Pulisco il dataset -------------------
 DataC = ErgonDataCleaner()
 DataC.setVerbose(True)
 DataC.loadDataset("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
-#DataC.cleanDataset()
+# DataC.cleanDataset()
 DataC.setOutput("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
 
 print("Ratio: ", DataC.getRatio())
@@ -29,67 +27,21 @@ print("Ratio: ", DataC.getRatio())
 df = pd.read_csv("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
 
 
-
-def normalize(df):
-    result = df.copy()
-    for feature_name in df.columns:
-        max_value = df[feature_name].max()
-        min_value = df[feature_name].min()
-        result[feature_name] = (df[feature_name] - min_value) / (max_value - min_value)
-    return result
+wcssRelevantFeatures = ['packets_dst_avg', 'avg_duration', 'src_port', 'dst_diversity', 'dst_port',
+                        'dst_ip', 'udp_ratio', 'tcp_ratio', 'http_ratio', 'src_diversity', 'ssh_ratio', 'smtp_ratio']
 
 
-
-        
-
-
-
-#-------------------------- Estrazione di features -----------------------
-extracted = pd.DataFrame()
-df["timestamp"] = pd.to_datetime(df["timestamp"])
-grouped = df.groupby(pd.Grouper(freq="1h", key="timestamp"))
-i = 0
-for hour in grouped.groups.keys():
-    esito = False
-    try:
-        a = grouped.get_group(hour)
-        esito = True
-    except:
-        esito = False
-        pass
-    else:
-        esito = True
-        extracted = extracted.append(extract_features(a))
-    i = i + 1 
-    print("Scanning time-slot :",i," di ", len(grouped.groups.keys()),hour.hour, ":",hour.minute," giorno ", hour.day, "//",
-          hour.month, " totale ", len(grouped.groups.keys()), esito)
-
-#extracted = normalize(extracted)
-extracted_values = MaxAbsScaler().fit_transform(extracted)
-extracted = pd.DataFrame(extracted_values,index=extracted.index,columns=extracted.columns)
-extracted=extracted[(np.abs(stats.zscore(extracted)) < 3).all(axis=1)]
-
-#----------- Test: rimozione featues non rilevanti -------------
-#+del extracted["http_ratio"]
-#del extracted["dst_ip"]
-#del extracted["bytes"]
-#del extracted["packets"]
-#del extracted["dst_port"]
-#del extracted["ssh_ratio"]
-#del extracted["avg_duration"]
-#del extracted["smtp_ratio"]
-
-
+featureExtractor = PaloAltoFeatureExtractor()
+featureExtractor.setEclusionList(None)
+extracted = featureExtractor.createAggregatedFeatureSet(df, "1800s")
 
 
 KMeans = KMeansClustering()
 KMeans.setVerbose(True)
 KMeans.setData(extracted)
 labeled = KMeans.clusterize()
-score = KMeans.get_score()
-cnum = KMeans.get_c_num()
-print("Clustering k-means: " , cnum, " ",score)
-
+print("Clustering k-means: ", KMeans.get_c_num(), " ", KMeans.get_score())
+KMeans.show_plot()
 
 
 #clients =  extracted[extracted.index.str.contains("192.168.121")]
@@ -100,48 +52,29 @@ print("Clustering k-means: " , cnum, " ",score)
 #mio = extracted.loc[extracted.index=="192.168.121.47"]
 
 
-#---------------------------------- Spectral  POC -------------------------------------------------
+# ---------------------------------- Spectral  POC -------------------------------------------------
 
 
-
-#Clustering spettrale
-from sklearn.metrics import davies_bouldin_score
-from sklearn.cluster import SpectralClustering
-clustering = SpectralClustering(assign_labels='discretize').fit(extracted)
+# Clustering spettrale
+clustering = SpectralClustering(
+    n_clusters=2, metric='nearest_neighbors', eigen_solver='amg').fit(extracted)
 labels_spectral = clustering.labels_
-print("SC spectral: ", silhouette_score(extracted, labels_spectral,metric="euclidean"))
+print("SC spectral: ", silhouette_score(
+    extracted, labels_spectral, metric="euclidean"))
 print("DB spectral: ", davies_bouldin_score(extracted, labels_spectral))
 
-#Clustering agglomerativo
-from sklearn.cluster import AgglomerativeClustering
+# Clustering agglomerativo
 clustering = AgglomerativeClustering(n_clusters=6).fit(extracted)
 labels_agglomerative = clustering.labels_
-print("SC agg: ", silhouette_score(extracted, labels_agglomerative, metric='euclidean'))
+print("SC agg: ", silhouette_score(
+    extracted, labels_agglomerative, metric='euclidean'))
 print("DB agg: ", davies_bouldin_score(extracted, labels_agglomerative))
 
 
-
-#Birch
-from sklearn.cluster import Birch
+# Birch
 brc = Birch(n_clusters=6)
 brc.fit_predict(extracted)
 birch_labels = brc.labels_
-print("SC bir: ", silhouette_score(extracted, birch_labels, metric='euclidean'))
+print("SC bir: ", silhouette_score(
+    extracted, birch_labels, metric='nearest_neighbors',))
 print("DB bir: ", davies_bouldin_score(extracted, birch_labels))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
