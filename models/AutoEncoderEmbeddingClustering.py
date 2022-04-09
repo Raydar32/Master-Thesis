@@ -20,6 +20,7 @@ import tensorflow as tf
 from sklearn.metrics import silhouette_score
 from sklearn.manifold import TSNE
 from umap import UMAP
+from models.DBScanClustering import DBScanClusteringModel
 
 
 class Autoencoder(Model):
@@ -69,7 +70,7 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
         autoencoder = Autoencoder()
         autoencoder.compile(optimizer='adam', loss="mse")
         autoencoder.fit(df_train, df_train,
-                        epochs=20,
+                        epochs=100,
                         shuffle=False,
                         validation_data=(df_test, df_test), verbose=self.verbose)
 
@@ -99,7 +100,7 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
         # Then clustering.
         self.vprint("Clustering")
         df2 = pd.DataFrame(encoded_imgs)
-
+        self.labeled_df = None
         if self.final_clustering == "kmeans":
             KMeans = KMeansClustering()
             KMeans.setVerbose(self.verbose)
@@ -116,6 +117,15 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
             self.labeled_df = spectralC.clusterize()
             self.final_score = spectralC.get_score()
             self.final_clusters = spectralC.get_c_num()
+
+        if self.final_clustering == "dbscan":
+            dbs = DBScanClusteringModel()
+            dbs.setVerbose(self.verbose)
+            dbs.setData(df2)
+            self.labeled_df = dbs.clusterize()
+            self.final_score = dbs.get_score()
+            self.final_clusters = dbs.get_c_num()
+
         return self.labeled_df
 
     def get_score(self):
