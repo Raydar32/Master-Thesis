@@ -33,15 +33,15 @@ class DCN(Model):
         """
         super(DCN, self).__init__()
 
-        ### AUTO-ENCODER PARAMS
+        # AUTO-ENCODER PARAMS
         if auto_encoder_dims is None:
-            auto_encoder_dims = [128, 256, 128]
+            auto_encoder_dims = [512, 512, 128, 8]
         self.kernel_initializer = initializers.HeNormal(seed=43)
         self.input_dim = input_dim
         self.latent_dim = latent_dim
 
-        ### DEFINE AUTO-ENCODER
-        ##### ENCODER
+        # DEFINE AUTO-ENCODER
+        # ENCODER
         encoder_layers = [layers.Input(shape=(input_dim,)),
                           layers.BatchNormalization(axis=-1)]
         for layer_no, dim in enumerate(auto_encoder_dims):
@@ -52,7 +52,7 @@ class DCN(Model):
             encoder_layers.append(layers.BatchNormalization(axis=-1))
         encoder_layers.append(layers.Dense(latent_dim))
         self.encoder = tf.keras.Sequential(encoder_layers)
-        ##### DECODER
+        # DECODER
         decoder_layers = [layers.Input(shape=(latent_dim,)),
                           layers.BatchNormalization(axis=-1)]
         for layer_no, dim in enumerate(reversed(auto_encoder_dims)):
@@ -64,12 +64,13 @@ class DCN(Model):
         decoder_layers.append(layers.Dense(input_dim))
         self.decoder = tf.keras.Sequential(decoder_layers)
 
-        ### CLUSTER PARAMS
+        # CLUSTER PARAMS
         self.n_clusters = n_clusters
         self.data_dim = latent_dim
         self.centers = None
         self.cluster_count = [0] * self.n_clusters
-        self.lamda = lamda  # to weigh cluster loss (against reconstruction loss)
+        # to weigh cluster loss (against reconstruction loss)
+        self.lamda = lamda
 
         self.kmeans = KMeans(n_clusters=n_clusters, random_state=43)
 
@@ -78,7 +79,8 @@ class DCN(Model):
         We use sklearn's implementation of k-means++ to initialize the cluster centers.
         """
 
-        init_km_model = KMeans(n_clusters=self.n_clusters, random_state=43, init='k-means++')
+        init_km_model = KMeans(n_clusters=self.n_clusters,
+                               random_state=43, init='k-means++')
         init_km_model.fit(X)
 
         self.centers = init_km_model.cluster_centers_.copy()
@@ -92,7 +94,8 @@ class DCN(Model):
         learning_rate = 1.0 / self.cluster_count[assigned_center]
         old_center = self.centers[assigned_center]
 
-        self.centers[assigned_center] = (1 - learning_rate) * old_center + learning_rate * x
+        self.centers[assigned_center] = (
+            1 - learning_rate) * old_center + learning_rate * x
 
     def get_assignment(self, X):
         """
@@ -113,8 +116,10 @@ class DCN(Model):
             clustering_loss += tf.norm(x_point - self.centers[assigned_center],
                                        ord='euclidean')
 
-        clustering_loss = tf.constant(self.lamda * clustering_loss, dtype='float32')
-        recon_loss = tf.norm(x_recon - y_true, ord='euclidean')  # tf.constant(0, dtype='float32')
+        clustering_loss = tf.constant(
+            self.lamda * clustering_loss, dtype='float32')
+        # tf.constant(0, dtype='float32')
+        recon_loss = tf.norm(x_recon - y_true, ord='euclidean')
 
         return recon_loss, clustering_loss
 
@@ -131,7 +136,8 @@ class DCN(Model):
             # get batches
             n_batches = int(len(data_pretrain) / batch_size)
 
-            batches = [data_pretrain[index * batch_size:(index + 1) * batch_size] for index in range(n_batches)]
+            batches = [
+                data_pretrain[index * batch_size:(index + 1) * batch_size] for index in range(n_batches)]
 
             # for each batch, perform forward pass and gradient step
             for batch in batches:
@@ -175,11 +181,13 @@ class DCN(Model):
                 # if this is the first calculation after pretraining, kmeans had not been initialized yet
                 self.init_centers(x_latent)
 
-            ### Loss calculation (equation (5) in orig paper)
+            # Loss calculation (equation (5) in orig paper)
             # get assignments of points in X (closest cluster centers) to calculate cluster loss
             nearest_center_label = self.get_assignment(x_latent)
-            reconstruction_loss, clustering_loss = self._loss(x, y_true, nearest_center_label)
-            total_loss = reconstruction_loss + clustering_loss  # self._loss already uses lambda
+            reconstruction_loss, clustering_loss = self._loss(
+                x, y_true, nearest_center_label)
+            # self._loss already uses lambda
+            total_loss = reconstruction_loss + clustering_loss
 
         # UPDATE NETWORK PARAMS (gradient step in equation (6) in orig paper)
         trainable_vars = self.trainable_variables
@@ -200,4 +208,3 @@ class DCN(Model):
         return {"loss": total_loss,
                 "recon_loss": reconstruction_loss,
                 "cluster_loss": clustering_loss}
-

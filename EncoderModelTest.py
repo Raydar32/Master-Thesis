@@ -48,12 +48,12 @@ class Autoencoder(Model):
 autoencoder = Autoencoder()
 autoencoder.compile(optimizer='adam', loss="mse")
 autoencoder.fit(df_train, df_train,
-                epochs=100,
+                epochs=20,
                 shuffle=False,
                 validation_data=(df_test, df_test))
 
 
-encoded_imgs = autoencoder.encoder(df.values)
+encoded_imgs = autoencoder.encoder(df.values).numpy()
 decoded_imgs = autoencoder.decoder(encoded_imgs).numpy()
 
 

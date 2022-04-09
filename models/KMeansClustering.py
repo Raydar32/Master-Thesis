@@ -11,6 +11,7 @@ from sklearn.metrics import silhouette_score
 import pandas as pd
 from sklearn.decomposition import PCA as sklearnPCA
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class KMeansClustering(ClusteringAlgorithm):
@@ -18,7 +19,7 @@ class KMeansClustering(ClusteringAlgorithm):
     def optimize(self):
         inertia = []
         for candidate in range(2, 30):
-            self.vprint("it: ", candidate)
+            self.vprint("Optimizing K-Means it: ", candidate)
             km = KMeans(n_clusters=candidate, init="k-means++")
             km.fit(self.df)
             inertia.append(km.inertia_)
@@ -35,6 +36,7 @@ class KMeansClustering(ClusteringAlgorithm):
             self.df, km.labels_, metric='euclidean')
         self.labeled_df = self.df.copy()
         self.labeled_df["cluster"] = km.labels_
+        self.final_clusters = len(np.unique(km.labels_))
         return self.labeled_df
 
     def get_score(self):
@@ -48,8 +50,9 @@ class KMeansClustering(ClusteringAlgorithm):
         transformed = pd.DataFrame(pca.fit_transform(df))
         return transformed
 
-    def show_plot(self):
-        self.vprint("Reducing dimensionality using PCA")
+    def show_plot(self, title):
         transformed = self.pca_reduce_df(self.df, 2)
         plt.scatter(transformed[0], transformed[1],
                     c=self.labeled_df["cluster"], cmap='viridis')
+        plt.title(title)
+        plt.show()

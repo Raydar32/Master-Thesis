@@ -13,7 +13,7 @@ from datetime import timedelta
 class ErgonDataCleaner(DataCleaner):
 
     def setMinimumHoursToBeClustered(self, hoursMinimum):
-        self.hoursMinimum
+        self.hoursMinimum = hoursMinimum
 
     def cleanDataset(self):
         application_exclusions = ["ms-product-activation",
