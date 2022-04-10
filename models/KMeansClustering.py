@@ -53,6 +53,6 @@ class KMeansClustering(ClusteringAlgorithm):
     def show_plot(self, title):
         transformed = self.pca_reduce_df(self.df, 2)
         plt.scatter(transformed[0], transformed[1],
-                    c=self.labeled_df["cluster"], cmap='viridis')
+                    c=self.labeled_df["cluster"], cmap='plasma', marker='.')
         plt.title(title)
         plt.show()

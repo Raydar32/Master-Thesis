@@ -21,17 +21,18 @@ from sklearn.metrics import silhouette_score
 from sklearn.manifold import TSNE
 from umap import UMAP
 from models.DBScanClustering import DBScanClusteringModel
+from models.SelfOrganizingMapModel import SelfOrganizingMapModel
 
 
 class Autoencoder(Model):
-    def __init__(self):
+    def __init__(self, bottleneck):
         super(Autoencoder, self).__init__()
 
         self.encoder = tf.keras.Sequential([
             layers.Dense(128, activation='relu'),
             layers.Dense(512, activation='relu'),
 
-            layers.Dense(8, activation='relu'),
+            layers.Dense(bottleneck, activation='relu'),
 
         ])
 
@@ -67,10 +68,14 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
         df_train, df_test = train_test_split(self.df)
         self.vprint("Creating autoencoder model..")
 
-        autoencoder = Autoencoder()
+        if self.manifold == None:
+            bneck = 2
+        else:
+            bneck = 8
+        autoencoder = Autoencoder(bneck)
         autoencoder.compile(optimizer='adam', loss="mse")
         autoencoder.fit(df_train, df_train,
-                        epochs=100,
+                        epochs=200,
                         shuffle=False,
                         validation_data=(df_test, df_test), verbose=self.verbose)
 
@@ -126,6 +131,14 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
             self.final_score = dbs.get_score()
             self.final_clusters = dbs.get_c_num()
 
+        if self.final_clustering == "som":
+            m = SelfOrganizingMapModel()
+            m.setVerbose(self.verbose)
+            m.setData(df2)
+            self.labeled_df = m.clusterize()
+            self.final_score = m.get_score()
+            self.final_clusters = m.get_c_num()
+
         return self.labeled_df
 
     def get_score(self):
@@ -137,7 +150,7 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
     def show_plot(self, title):
 
         plt.scatter(self.labeled_df[0], self.labeled_df[1],
-                    c=self.labeled_df["cluster"], cmap='viridis')
+                    c=self.labeled_df["cluster"], cmap='plasma', marker='.')
         plt.title(title)
         plt.show()
 
