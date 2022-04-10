@@ -37,6 +37,8 @@ featureExtractor.setEclusionList(None)
 extracted = featureExtractor.createAggregatedFeatureSet(df, "1h")
 
 
+results = pd.DataFrame()
+
 # -------------------- Clustering Experiments -----------------
 print("\033[H\033[J")
 print("-----------------------------------------------------------------")
@@ -50,78 +52,51 @@ for i in range(0, 10):
 
     # Modelli base (Senza ottimizzazione features)
     start_time = time.time()
-    dbs = DBScanClusteringModel()
-    dbs.setVerbose(False)
-    dbs.setData(extracted)
-    dbs.clusterize()
+    b = DBScanClusteringModel()
+    b.setVerbose(False)
+    b.setData(extracted)
+    b.clusterize()
     print("Classic clustering DBSCAN (no-opt) ",
-          dbs.get_c_num(), " ", dbs.get_score(), " ", ((time.time() - start_time)), "s")
-    dbs.show_plot("Classical DBSCAN clustering (no-opt) ")
+          b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    b.show_plot("Classical DBSCAN clustering (no-opt) ")
+    row = {"method": "Classic-DBSCAN", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
+
+    b = KMeansClustering()
+    b.setVerbose(False)
+    b.setData(extracted)
+    b.clusterize()
+    print("Classic clustering beans (no-opt) ",
+          b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    b.show_plot("Classical K-Means clustering (no-opt)")
+    row = {"method": "Classic-KMeans", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
-    km = KMeansClustering()
-    km.setVerbose(False)
-    km.setData(extracted)
-    km.clusterize()
-    print("Classic clustering kmeans (no-opt) ",
-          km.get_c_num(), " ", km.get_score(), " ", ((time.time() - start_time)), "s")
-    km.show_plot("Classical K-Means clustering (no-opt)")
-
-    start_time = time.time()
-    spec = SpectralClusteringModel()
-    spec.setVerbose(False)
-    spec.setData(extracted)
-    spec.clusterize()
+    b = SpectralClusteringModel()
+    b.setVerbose(False)
+    b.setData(extracted)
+    b.clusterize()
     print("Classic clustering spectral (no-opt) ",
-          spec.get_c_num(), " ", spec.get_score(), " ", ((time.time() - start_time)), "s")
-    spec.show_plot("Classical Spectral clustering (no-opt) ")
+          b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    b.show_plot("Classical Spectral clustering (no-opt) ")
+    row = {"method": "Classic-Spectral", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
-    m = SelfOrganizingMapModel()
-    m.setVerbose(False)
-    m.setData(extracted)
-    m.clusterize()
+    b = SelfOrganizingMapModel()
+    b.setVerbose(False)
+    b.setData(extracted)
+    b.clusterize()
     print("Classic clustering SOM (no-opt) ",
-          m.get_c_num(), " ", m.get_score(), " ", ((time.time() - start_time)), "s")
-    m.show_plot("Classical SOM clustering (no-opt) ")
-
-    # Autoencoder senza niente
-
-    start_time = time.time()
-    b = AutoencoderEmbeddingClusteringModel(None, "kmeans")
-    b.setVerbose(False)
-    b.setData(extracted)
-    b.clusterize()
-    b.show_plot("Autoencoder base  k-means")
-    print("Autoencoder base  k-means ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
-
-    start_time = time.time()
-    b = AutoencoderEmbeddingClusteringModel(None, "spectral")
-    b.setVerbose(False)
-    b.setData(extracted)
-    b.clusterize()
-    b.show_plot("Autoencoder base spectral")
-    print("Autoencoder base spectral ",
-          b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
-
-    start_time = time.time()
-    b = AutoencoderEmbeddingClusteringModel(None, "som")
-    b.setVerbose(False)
-    b.setData(extracted)
-    b.clusterize()
-    b.show_plot("Autoencoder base som")
-    print("Autoencoder base som ",
-          b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
-
-    start_time = time.time()
-    b = AutoencoderEmbeddingClusteringModel(None, "dbscan")
-    b.setVerbose(False)
-    b.setData(extracted)
-    b.clusterize()
-    b.show_plot("Autoencoder  base dbscan")
-    print("Autoencoder base dbscan",
-          b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    b.show_plot("Classical SOM clustering (no-opt) ")
+    row = {"method": "Classic-SOM", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     # Modelli deep learning - Kmeans con vari Manifold
     start_time = time.time()
@@ -132,6 +107,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder isomap - kmeans")
     print("Autoencoder clustering isomap - kmeans ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "Isomap-KMEans", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("tsne", "kmeans")
@@ -142,6 +120,9 @@ for i in range(0, 10):
     print("Autoencoder clustering  tsne - kmeans ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
     start_time = time.time()
+    row = {"method": "TSNE-KMEans", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     b = AutoencoderEmbeddingClusteringModel("spectral", "kmeans")
     b.setVerbose(False)
@@ -151,6 +132,9 @@ for i in range(0, 10):
     print("Autoencoder clustering spectral - kmeans ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
     start_time = time.time()
+    row = {"method": "Spectral-KMEans", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     b = AutoencoderEmbeddingClusteringModel("umap", "kmeans")
     b.setVerbose(False)
@@ -159,6 +143,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder  umap - kmeans")
     print("Autoencoder clustering  umap - kmeans ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "UMAP-KMEans", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     # Modelli deep learning - DBSCAN con vari Manifold
     start_time = time.time()
@@ -169,6 +156,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder isomap - dbscan")
     print("Autoencoder clustering isomap - dbscan ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "Isomap-DBSCAN", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("tsne", "dbscan")
@@ -178,6 +168,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder  tsne - dbscan")
     print("Autoencoder clustering  tsne - dbscan ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "TSne-DBSCAN", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("spectral", "dbscan")
@@ -187,6 +180,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder spectral - dbscan")
     print("Autoencoder clustering spectral - dbscan ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "Spectral-DBSCAN", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("umap", "dbscan")
@@ -196,6 +192,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder  umap - dbscan")
     print("Autoencoder clustering  umap - dbscan ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "UMAP-DBSCAN", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     # Modelli deep learning - SOM con vari Manifold
     start_time = time.time()
@@ -206,6 +205,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder isomap - Neural-SOM")
     print("Autoencoder clustering isomap - Neural-SOM ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "Isomap-SOM", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("tsne", "som")
@@ -215,6 +217,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder  tsne - Neural-SOM")
     print("Autoencoder clustering  tsne - Neural-SOM ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "TSne-SOM", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("spectral", "som")
@@ -224,6 +229,9 @@ for i in range(0, 10):
     b.show_plot("Autoencoder spectral - Neural-SOM")
     print("Autoencoder clustering spectral - Neural-SOM ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "Spectral-SOM", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
 
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("umap", "som")
@@ -233,3 +241,13 @@ for i in range(0, 10):
     b.show_plot("Autoencoder  umap - Neural-SOM")
     print("Autoencoder clustering  umap - Neural-SOM ",
           b.get_c_num(), " ", b.get_score(), " ", ((time.time() - start_time)), "s")
+    row = {"method": "UMAP-SOM", "expnum": i,
+           "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
+    results = results.append(row, ignore_index=True)
+
+    print("------------------------------------------------------------------------")
+    results.to_csv("experiment10.04.22.csv")
+    results.to_csv("J:\\experiment10.04.22.csv")
+    results = results.groupby("method").mean()
+    results.to_csv("experiment10.04.22_grouped.csv")
+    results.to_csv("J:\\experiment10.04.22_grouped.csv")
