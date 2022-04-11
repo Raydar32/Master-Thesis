@@ -17,8 +17,8 @@ import time
 DataC = ErgonDataCleaner()
 DataC.setMinimumHoursToBeClustered(10)
 DataC.setVerbose(True)
-DataC.loadDataset("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
-# DataC.cleanDataset()
+DataC.loadDataset("C:\\Users\\Alessandro\\Downloads\\aprile.csv")
+DataC.cleanDataset()
 DataC.setOutput("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
 
 print("Ratio: ", DataC.getRatio())
