@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Test file to keep everything together
+This script is meant to reproduce experiments reported
+in the slides in order to find optimal methods.
 """
 
 
@@ -14,17 +15,17 @@ from dataprocessing.DatasetCleaner import ErgonDataCleaner
 from models.DBScanClustering import DBScanClusteringModel
 import time
 # ------------------- Pulisco il dataset -------------------
-DataC = ErgonDataCleaner()
-DataC.setMinimumHoursToBeClustered(10)
-DataC.setVerbose(True)
-DataC.loadDataset("C:\\aprile.csv")
-DataC.cleanDataset()
-DataC.setOutput("C:\\InProgress\\Tesi.csv")
+# = ErgonDataCleaner()
+# DataC.setMinimumHoursToBeClustered(10)
+# DataC.setVerbose(True)
+# DataC.loadDataset("C:\\Users\\Alessandro\\Downloads\\Tesi_r.csv")
+# DataC.cleanDataset()
+# DataC.setOutput("C:\\Users\\Alessandro\\Downloads\\Tesi_r.csv")
 
-print("Ratio: ", DataC.getRatio())
+#print("Ratio: ", DataC.getRatio())
 
 
-df = pd.read_csv("C:\\InProgress\\Tesi.csv")
+df = pd.read_csv("C:\\Users\\Alessandro\\Downloads\\Tesi_r.csv")
 
 
 # ------------------- Feature extraction --------------------
@@ -32,30 +33,30 @@ wcssRelevantFeatures = ['src_port',
                         'packets_dst_avg',
                         'packets_src_avg',
                         'dst_ip',
-                        'dst_port'  ,
-                        'src_diversity'  ,
-                        'udp_ratio'  ,
-                        'tcp_ratio' ,
-                        'dst_diversity'  ,
-                        'http_ratio'  ,
-                        'ssh_ratio'  ,
-                        'smtp_ratio' ,]
+                        'dst_port',
+                        'src_diversity',
+                        'udp_ratio',
+                        'tcp_ratio',
+                        'dst_diversity',
+                        'http_ratio',
+                        'ssh_ratio',
+                        'smtp_ratio', ]
 
 unsup2supRelevantFeatures = ['packets_dst_avg',
-                            'avg_duration',
-                            'src_port',
-                            'dst_diversity',
-                            'dst_port',
-                            'dst_ip',
-                            'udp_ratio',
-                            'tcp_ratio',
-                            'http_ratio',
-                            'src_diversity' ,
-                            'ssh_ratio',
-                            'smtp_ratio']
+                             'avg_duration',
+                             'src_port',
+                             'dst_diversity',
+                             'dst_port',
+                             'dst_ip',
+                             'udp_ratio',
+                             'tcp_ratio',
+                             'http_ratio',
+                             'src_diversity',
+                             'ssh_ratio',
+                             'smtp_ratio']
 
 featureExtractor = PaloAltoFeatureExtractor()
-featureExtractor.setEclusionList(wcssRelevantFeatures)
+featureExtractor.setEclusionList(None)
 extracted = featureExtractor.createAggregatedFeatureSet(df, "1h")
 
 featureExtractor = PaloAltoFeatureExtractor()
