@@ -37,8 +37,10 @@ class PaloAltoFeatureExtractor():
                 extracted = extracted.append(
                     self.extractFeaturesFromDataSlice(a))
             i = i + 1
-            print("Scanning time-slot :", i, " di ", len(grouped.groups.keys()), hour.hour, ":", hour.minute, " giorno ", hour.day, "//",
-                  hour.month, " totale ", len(grouped.groups.keys()), esito)
+# =============================================================================
+#             print("Scanning time-slot :", i, " di ", len(grouped.groups.keys()), hour.hour, ":", hour.minute, " giorno ", hour.day, "//",
+#                   hour.month, " totale ", len(grouped.groups.keys()), esito)
+# =============================================================================
 
         extracted_values = MaxAbsScaler().fit_transform(extracted)
         extracted = pd.DataFrame(
@@ -52,7 +54,7 @@ class PaloAltoFeatureExtractor():
         # Applico la lsita di esclusioni
         if self.exclusionList != None:
             for item in self.exclusionList:
-                print("Rimuovo feature : ", item)
+                #print("Rimuovo feature : ", item)
                 del extracted[item]
         return extracted
 
