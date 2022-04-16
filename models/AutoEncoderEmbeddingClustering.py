@@ -139,6 +139,9 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
             self.final_score = m.get_score()
             self.final_clusters = m.get_c_num()
 
+        self.labeled_df["src_ip"] = self.df.index.values
+        self.labeled_df = self.labeled_df.set_index("src_ip")
+
         return self.labeled_df
 
     def get_score(self):
