@@ -75,7 +75,7 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
         autoencoder = Autoencoder(bneck)
         autoencoder.compile(optimizer='adam', loss="mse")
         autoencoder.fit(df_train, df_train,
-                        epochs=200,
+                        epochs=100,
                         shuffle=False,
                         validation_data=(df_test, df_test), verbose=self.verbose)
 
