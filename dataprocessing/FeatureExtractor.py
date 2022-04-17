@@ -6,33 +6,18 @@ Created on Mon Apr  4 10:19:18 2022
 """
 import pandas as pd
 import numpy as np
-from scipy import stats
-from sklearn.preprocessing import MaxAbsScaler
+
+
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import IsolationForest
-from sklearn.svm import OneClassSVM
-from sklearn.covariance import EllipticEnvelope
+from scipy import integrate, stats
 
 
 def IsolationForestRemoveOutliers(dataset):
-    # =============================================================================
-    outlierRemoval = IsolationForest(contamination=0.12)
+
+    outlierRemoval = IsolationForest(contamination=0.01)
     predictedOutliers = outlierRemoval.fit_predict(dataset)
     dataset = dataset[np.where(predictedOutliers == 1, True, False)]
-    # =============================================================================
-
-    # =============================================================================
-    #     outlierRemoval = OneClassSVM(nu=0.12)
-    #     predictedOutliers = outlierRemoval.fit_predict(dataset)
-    #     dataset = dataset[np.where(predictedOutliers == 1, True, False)]
-    #
-    # =============================================================================
-
-# =============================================================================
-#     outlierRemoval = EllipticEnvelope(contamination=0.12)
-#     predictedOutliers = outlierRemoval.fit_predict(dataset)
-#     dataset = dataset[np.where(predictedOutliers == 1, True, False)]
-# =============================================================================
 
     return dataset
 
@@ -69,7 +54,7 @@ class PaloAltoFeatureExtractor():
 #                   hour.month, " totale ", len(grouped.groups.keys()), esito)
 # =============================================================================
 
-        extracted_values = MaxAbsScaler().fit_transform(extracted)
+        extracted_values = MinMaxScaler().fit_transform(extracted)
         extracted = pd.DataFrame(
             extracted_values, index=extracted.index, columns=extracted.columns)
 
@@ -80,7 +65,7 @@ class PaloAltoFeatureExtractor():
 
         extracted = extracted[(
             np.abs(stats.zscore(extracted)) < 3).all(axis=1)]
-        # ○extracted = IsolationForestRemoveOutliers(extracted)
+        #extracted = IsolationForestRemoveOutliers(extracted)
 
         if self.exclusionList != None:
             for item in self.exclusionList:

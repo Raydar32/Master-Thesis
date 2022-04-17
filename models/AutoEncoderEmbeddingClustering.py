@@ -30,14 +30,15 @@ class Autoencoder(Model):
 
         self.encoder = tf.keras.Sequential([
             layers.Dense(128, activation='relu'),
-            layers.Dense(512, activation='relu'),
-
+            layers.Dense(256, activation='relu'),
+            layers.Dense(128, activation='relu'),
             layers.Dense(bottleneck, activation='relu'),
 
         ])
 
         self.decoder = tf.keras.Sequential([
-            layers.Dense(512, activation='relu'),
+            layers.Dense(128, activation='relu'),
+            layers.Dense(256, activation='relu'),
             layers.Dense(128, activation='relu'),
             layers.Dense(17, activation='sigmoid'),
 
@@ -69,7 +70,7 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
         self.vprint("Creating autoencoder model..")
 
         if self.manifold == None:
-            bneck = 2
+            bneck = 4
         else:
             bneck = 8
         autoencoder = Autoencoder(bneck)
@@ -86,7 +87,8 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
         # If IsoMap then apply transformation
         if self.manifold != None and self.manifold == "isomap":
             self.vprint("Applying isomap")
-            encoded_imgs = Isomap(n_components=2).fit_transform(encoded_imgs)
+            encoded_imgs = Isomap(
+                n_components=3).fit_transform(encoded_imgs)
 
         if self.manifold != None and self.manifold == "tsne":
             self.vprint("Applying T-Sne")
@@ -160,4 +162,5 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
     def pca_reduce_df(self, df, comps):
         pca = sklearnPCA(comps)  # 2-dimensional PCA
         transformed = pd.DataFrame(pca.fit_transform(df))
+        return transformed
         return transformed

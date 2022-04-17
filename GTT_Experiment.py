@@ -20,13 +20,9 @@ import time
 groundTruth = {'192.168.121.47',
                '192.168.121.76',
                '192.168.121.80',
-               '192.168.121.44',
-               "192.168.121.11",  # Fine tecnici
                '192.168.121.6',
-               '192.168.121.22',
                '192.168.121.21',
-               '192.168.121.48',
-               '192.168.121.45',  # Fine amministrativi
+               '192.168.121.45',
                }
 
 
@@ -40,6 +36,7 @@ def generateGTT(targets, labelset):
     return table
 
 
+# # â =============================================================================
 DataC = ErgonDataCleaner()
 DataC.setMinimumHoursToBeClustered(10)
 DataC.setVerbose(True)
@@ -47,16 +44,19 @@ DataC.loadDataset("C:\\Users\\Alessandro\\Downloads\\aprile.csv")
 DataC.cleanDataset()
 DataC.setOutput("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
 print("Ratio: ", DataC.getRatio())
-
+# #
+# # =============================================================================
 
 # Loading and selecting 2 weeks of old traffic as base
 df = pd.read_csv("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
 
 
+# =============================================================================
 df['timestamp'] = pd.to_datetime(df['timestamp'])
-mask = (df['timestamp'] >= "2022-03-11 00:00:00+00:00") & (df['timestamp']
-                                                           <= "2022-04-2 00:00:00+00:00")
+mask = (df['timestamp'] >= "2022-03-19 00:00:00+00:00") & (df['timestamp']
+                                                           <= "2022-04-02 00:00:00+00:00")
 df = df.loc[mask]
+# =============================================================================
 
 
 # =============================================================================
@@ -66,14 +66,14 @@ df = df.loc[mask]
 # Normalization: MinMaxScaler
 # Average result: 0.87
 # =============================================================================
-time = "900s"
+time = "600s"
 print("Processing", time)
 featureExtractor = PaloAltoFeatureExtractor()
 featureExtractor.setEclusionList(None)
 extractedForAutoencoder = featureExtractor.createAggregatedFeatureSet(df, time)
 
 b = AutoencoderEmbeddingClusteringModel("isomap", "kmeans")
-b.setVerbose(False)
+b.setVerbose(True)
 b.setData(extractedForAutoencoder)
 labelset_autoencoder = b.clusterize()
 b.show_plot("Autoencoder isomap - kmeans")
@@ -93,21 +93,21 @@ autoencoderGTT = generateGTT(groundTruth, labelset_autoencoder)
 # =============================================================================
 
 
-unsup2supRelevantFeatures = ['packets_dst_avg',
-                             'avg_duration',
-                             'src_port',
-                             'dst_diversity',
-                             'dst_port',
-                             'dst_ip',
-                             'udp_ratio',
-                             'tcp_ratio',
-                             'http_ratio',
-                             'src_diversity',
-                             'ssh_ratio',
-                             'smtp_ratio']
+unsup2supUnrelevantFeatures = ['packets_dst_avg',
+                               'avg_duration',
+                               'src_port',
+                               'dst_diversity',
+                               'dst_port',
+                               'dst_ip',
+                               'udp_ratio',
+                               'tcp_ratio',
+                               'http_ratio',
+                               'src_diversity',
+                               'ssh_ratio',
+                               'smtp_ratio']
 
 featureExtractor = PaloAltoFeatureExtractor()
-featureExtractor.setEclusionList(unsup2supRelevantFeatures)
+featureExtractor.setEclusionList(unsup2supUnrelevantFeatures)
 extracted = featureExtractor.createAggregatedFeatureSet(df, "600s")
 
 
