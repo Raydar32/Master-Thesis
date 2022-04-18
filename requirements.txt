@@ -1,4 +1,4 @@
-datasets==2.0.0
+Flask==1.1.2
 keras==2.8.0
 kneed==0.7.0
 matplotlib==3.4.3
@@ -12,3 +12,4 @@ seaborn==0.11.2
 tensorflow==2.8.0
 umap==0.1.1
 umap_learn==0.5.2
+yacryptopan==1.0.1
