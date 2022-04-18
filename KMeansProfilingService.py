@@ -64,6 +64,7 @@ class KMeansProfilingService():
             os.getcwd() + "/" + "kmeans_association.csv")
 
         # Cleaning Dataset
+
         DataC = ErgonDataCleaner()
         DataC.setMinimumHoursToBeClustered(10)
         DataC.setVerbose(True)
@@ -127,6 +128,8 @@ class KMeansProfilingService():
             return False
 
 
-KMeansProfilingService = KMeansProfilingService()
-KMeansProfilingService.predictProfiles()
-KMeansProfilingService.getAssociationSet()
+# =============================================================================
+# KMeansProfilingService = KMeansProfilingService()
+# KMeansProfilingService.predictProfiles()
+# KMeansProfilingService.getAssociationSet()
+# =============================================================================

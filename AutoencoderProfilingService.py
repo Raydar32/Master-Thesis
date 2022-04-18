@@ -87,7 +87,7 @@ class AutoencoderProfilingService():
         extracted = featureExtractor.createAggregatedFeatureSet(df, "900s")
 
         # Starting clustering algorithm
-        self.clusteringAlgorithm.setVerbose(True)
+        self.clusteringAlgorithm.setVerbose(False)
         self.clusteringAlgorithm.setData(extracted)
         labelset_kmeans_classic = self.clusteringAlgorithm.clusterize()
         print("Classic clustering beans (no-opt) ",
@@ -115,6 +115,8 @@ class AutoencoderProfilingService():
             return False
 
 
-AutoencoderProfilingService = AutoencoderProfilingService()
-AutoencoderProfilingService.predictProfiles()
-AutoencoderProfilingService.getAssociationSet()
+# =============================================================================
+# AutoencoderProfilingService = AutoencoderProfilingService()
+# AutoencoderProfilingService.predictProfiles()
+# AutoencoderProfilingService.getAssociationSet()
+# =============================================================================

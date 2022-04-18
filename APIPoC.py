@@ -1,42 +1,55 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr 18 15:28:05 2022
-
+Flask REST interface
 @author: Alessandro
 """
-from flask import Flask
 
+from flask import Flask
+from AutoencoderProfilingService import AutoencoderProfilingService
+from KMeansProfilingService import KMeansProfilingService
+import time
+
+# Init Flask Application
 app = Flask(__name__)
 
-
-@app.route('/')
-def index():
-    return 'Web App with Python Flask!'
-
-
-app.run(host='0.0.0.0', port=1000)
+# Profilers
+KMeansService = KMeansProfilingService()
+AutoencoderService = AutoencoderProfilingService()
 
 
-# =============================================================================
-# from flask import Flask
-#
-# app = Flask(__name__)
-#
-# @app.route('/user/<username>')
-# def show_user(username):
-#     # Greet the user
-#     return f'Hello {username} !'
-#
-# # Pass the required route to the decorator.
-# @app.route("/hello")
-# def hello():
-#     return "Hello, Welcome to GeeksForGeeks"
-#
-# @app.route("/")
-# def index():
-#     return "Homepage of GeeksForGeeks"
-#
-# if __name__ == "__main__":
-#     app.run(debug=True)
-#
-# =============================================================================
+@app.route('/kmeans/<srcip>')
+def getKmeansUserProfile(srcip):
+    return KMeansService.getUserProfile(srcip).to_dict()
+
+
+@app.route('/kmeans/score')
+def getKmeansScore():
+    return str(KMeansService.getScore())
+
+
+@app.route('/aenc/<srcip>')
+def getAencUserProfile(srcip):
+    return AutoencoderService.getUserProfile(srcip).to_dict()
+
+
+@app.route('/aenc/score')
+def getAencScore():
+    return str(AutoencoderService.getScore())
+
+
+@app.route('/ping')
+def ping():
+    return "pong"
+
+
+if __name__ == "__main__":
+    print("Fitting Kmeans and autoencoder model")
+    start_time = time.time()
+
+    KMeansService.predictProfiles()
+    AutoencoderService.predictProfiles()
+
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print("Models fitted")
+
+    app.run(host='0.0.0.0', port=1000, debug=False)
