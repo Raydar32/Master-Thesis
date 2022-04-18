@@ -66,7 +66,7 @@ df = df.loc[mask]
 # Normalization: MinMaxScaler
 # Average result: 0.87
 # =============================================================================
-time = "600s"
+time = "900s"
 print("Processing", time)
 featureExtractor = PaloAltoFeatureExtractor()
 featureExtractor.setEclusionList(None)

@@ -1,0 +1,3 @@
+Instllation steps:
+1) Inserire il dataset con nome "traffic_dataset" in subfolder "datasets"
+2) Installare password 32 bit per anonimizzazione con keyring 

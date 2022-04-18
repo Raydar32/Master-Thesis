@@ -58,14 +58,18 @@ class PaloAltoFeatureExtractor():
         extracted = pd.DataFrame(
             extracted_values, index=extracted.index, columns=extracted.columns)
 
-        extracted["ssh_ratio"] = extracted["ssh_ratio"].apply(
-            lambda x: 1 if x > 0 else 0)
-
         print("Outlier detection and removal")
 
         extracted = extracted[(
             np.abs(stats.zscore(extracted)) < 3).all(axis=1)]
         #extracted = IsolationForestRemoveOutliers(extracted)
+
+        # IsOn su SSH e rdp
+        extracted["ssh_ratio"] = extracted["ssh_ratio"].apply(
+            lambda x: 1 if x > 0 else 0)
+
+        extracted["rdp_ratio"] = extracted["rdp_ratio"].apply(
+            lambda x: 1 if x > 0 else 0)
 
         if self.exclusionList != None:
             for item in self.exclusionList:
@@ -133,6 +137,13 @@ class PaloAltoFeatureExtractor():
         extractedFeatures = extractedFeatures.join(
             (dataSlice[(dataSlice["dst_port"] == 22)].groupby("src_ip")["dst_port"].count(
             )/dataSliceGroupedBySourceIP["dst_port"].count()).replace(np.nan, 0).rename("ssh_ratio")
+
+        )
+
+        # |rdp|/|tot| (Normalizza a 1, feature del tipo isON)
+        extractedFeatures = extractedFeatures.join(
+            (dataSlice[(dataSlice["dst_port"] == 3389)].groupby("src_ip")["dst_port"].count(
+            )/dataSliceGroupedBySourceIP["dst_port"].count()).replace(np.nan, 0).rename("rdp_ratio")
 
         )
 

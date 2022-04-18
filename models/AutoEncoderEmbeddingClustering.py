@@ -40,7 +40,7 @@ class Autoencoder(Model):
             layers.Dense(128, activation='relu'),
             layers.Dense(256, activation='relu'),
             layers.Dense(128, activation='relu'),
-            layers.Dense(17, activation='sigmoid'),
+            layers.Dense(18, activation='sigmoid'),
 
         ])
 

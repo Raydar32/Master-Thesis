@@ -57,7 +57,7 @@ unsup2supRelevantFeatures = ['packets_dst_avg',
 
 featureExtractor = PaloAltoFeatureExtractor()
 featureExtractor.setEclusionList(unsup2supRelevantFeatures)
-extracted = featureExtractor.createAggregatedFeatureSet(df, "900s")
+extracted = featureExtractor.createAggregatedFeatureSet(df, "600s")
 
 featureExtractor = PaloAltoFeatureExtractor()
 featureExtractor.setEclusionList(None)
