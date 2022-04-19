@@ -10,6 +10,8 @@ from dataprocessing.DatasetCleaner import ErgonDataCleaner
 import pandas as pd
 import os.path
 from pathlib import Path
+from exceptions.modelNotFitException import modelNotFitException
+from exceptions.itemNotFoundException import itemNotFoundException
 
 
 def generateAssociationSet(targets, labelset):
@@ -39,13 +41,13 @@ class AutoencoderProfilingService():
 
     def getScore(self):
         if self.score == None:
-            raise ValueError("Model has not fit yet")
+            raise modelNotFitException("Model has not fit yet")
         else:
             return self.score
 
     def getClusterNum(self):
         if self.cluster_num == None:
-            raise ValueError("Model has not fit yet")
+            raise modelNotFitException("Model has not fit yet")
         else:
             return self.cluster_num
 
@@ -53,8 +55,16 @@ class AutoencoderProfilingService():
         return self.association_set
 
     def getUserProfile(self, src_ip):
-        association_set = self.getAssociationSet()
-        return association_set.loc[association_set.index == src_ip]
+        try:
+            association_set = self.getAssociationSet()
+            found = association_set.loc[association_set.index == src_ip]
+        except:
+            raise modelNotFitException("Model has not fit yet")
+        else:
+            if len(found) == 0:
+                raise itemNotFoundException("Item requested not found")
+            else:
+                return found
 
     def predictProfiles(self):
         # Loading and cleaning the dataset

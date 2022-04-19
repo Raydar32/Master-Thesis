@@ -8,6 +8,9 @@ from flask import Flask
 from AutoencoderProfilingService import AutoencoderProfilingService
 from KMeansProfilingService import KMeansProfilingService
 import time
+from flask import abort
+from exceptions.modelNotFitException import modelNotFitException
+from exceptions.itemNotFoundException import itemNotFoundException
 
 # Init Flask Application
 app = Flask(__name__)
@@ -19,22 +22,50 @@ AutoencoderService = AutoencoderProfilingService()
 
 @app.route('/kmeans/<srcip>')
 def getKmeansUserProfile(srcip):
-    return KMeansService.getUserProfile(srcip).to_dict()
+    found = None
+    try:
+        found = KMeansService.getUserProfile(srcip).to_dict()
+    except modelNotFitException:
+        return "not fit yet", 404
+    except itemNotFoundException:
+        return str(srcip + " not found "), 404
+    else:
+        return found
 
 
 @app.route('/kmeans/score')
 def getKmeansScore():
-    return str(KMeansService.getScore())
+    score = 0
+    try:
+        score = str(KMeansService.getScore())
+    except modelNotFitException:
+        return "not fit yet", 404
+    else:
+        return score
 
 
 @app.route('/aenc/<srcip>')
 def getAencUserProfile(srcip):
-    return AutoencoderService.getUserProfile(srcip).to_dict()
+    found = None
+    try:
+        found = AutoencoderService.getUserProfile(srcip).to_dict()
+    except modelNotFitException:
+        return "not fit yet", 404
+    except itemNotFoundException:
+        return str(srcip + " not found "), 404
+    else:
+        return found
 
 
 @app.route('/aenc/score')
 def getAencScore():
-    return str(AutoencoderService.getScore())
+    score = 0
+    try:
+        score = str(AutoencoderService.getScore())
+    except modelNotFitException:
+        return "not fit yet", 404
+    else:
+        return score
 
 
 @app.route('/ping')
