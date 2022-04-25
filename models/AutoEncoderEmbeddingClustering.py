@@ -73,6 +73,8 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
             bneck = 4
         else:
             bneck = 8
+
+        self.vprint("Training autoencoder")
         autoencoder = Autoencoder(bneck)
         autoencoder.compile(optimizer='adam', loss="mse")
         autoencoder.fit(df_train, df_train,
@@ -80,6 +82,7 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
                         shuffle=False,
                         validation_data=(df_test, df_test), verbose=self.verbose)
 
+        self.vprint("Applying encoder to input")
         encoded_imgs = autoencoder.encoder(self.df.values).numpy()
 
         # ----- Clustering Using Strategy and no-Manifold ----

@@ -8,9 +8,9 @@ from flask import Flask
 from AutoencoderProfilingService import AutoencoderProfilingService
 from KMeansProfilingService import KMeansProfilingService
 import time
-from flask import abort
 from exceptions.modelNotFitException import modelNotFitException
 from exceptions.itemNotFoundException import itemNotFoundException
+import logging
 
 # Init Flask Application
 app = Flask(__name__)
@@ -75,12 +75,14 @@ def ping():
 
 if __name__ == "__main__":
     print("Fitting Kmeans and autoencoder model")
+    app.logger.info('Fitting Kmeans and autoencoder model')
     start_time = time.time()
-
-    KMeansService.predictProfiles()
+    
     AutoencoderService.predictProfiles()
+    KMeansService.predictProfiles()
+    
 
     print("--- %s seconds ---" % (time.time() - start_time))
     print("Models fitted")
-
-    app.run(host='0.0.0.0', port=1000, debug=False)
+    app.logger.info("Models fitted")
+    app.run(debug=False, host='0.0.0.0',port=5000)

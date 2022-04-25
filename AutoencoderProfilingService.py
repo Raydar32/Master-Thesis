@@ -68,15 +68,12 @@ class AutoencoderProfilingService():
 
     def predictProfiles(self):
         # Loading and cleaning the dataset
+        print("Loading datasets")
         inputDataset = Path(os.getcwd() + "/datasets" + "/traffic_dataset.csv")
         outputCleanedDataset = Path(
             os.getcwd() + "/datasets" + "/" + "traffic_dataset_autoencoder" + "_r.csv")
         outputAssociationSet = Path(
             os.getcwd() + "/" + "autoencoder_association.csv")
-
-        if not os.path.isfile(inputDataset):
-            raise Exception(
-                "Input dataset in /datasets not found, no traffic_dataset.csv")
 
         # Cleaning Dataset
         DataC = ErgonDataCleaner()
@@ -85,7 +82,9 @@ class AutoencoderProfilingService():
         DataC.loadDataset(inputDataset)
         DataC.cleanDataset()
         DataC.setOutput(outputCleanedDataset)
+
         print("Ratio: ", DataC.getRatio())
+
         df = pd.read_csv(outputCleanedDataset)
 
         # Adjusting lenght of dataset as experiments suggests:
@@ -97,7 +96,7 @@ class AutoencoderProfilingService():
         extracted = featureExtractor.createAggregatedFeatureSet(df, "900s")
 
         # Starting clustering algorithm
-        self.clusteringAlgorithm.setVerbose(False)
+        self.clusteringAlgorithm.setVerbose(True)
         self.clusteringAlgorithm.setData(extracted)
         labelset_kmeans_classic = self.clusteringAlgorithm.clusterize()
         print("Classic clustering beans (no-opt) ",
