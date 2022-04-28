@@ -8,10 +8,18 @@ from yacryptopan import CryptoPAn
 from pathlib import Path
 import os
 import pandas as pd
+import keyring
+import sys
+
+# keyring.set_password("up-kmae", "up-kmae", "8yo8A5XMbzhRe3mQbdymPnGdOOZMPuse"
+
 
 LUTFileName = "LUT.csv"
 LUTpath = Path(os.getcwd() + "/" + LUTFileName)
-key = '32-char-str-for-AES-key-and-pad.'
+key = keyring.get_password("up-kmae", "up-kmae")
+if key == None:
+    print("System key for up-kmae has not been installed.\nFollow the documentation.")
+    sys.exit(0)
 
 
 def generateNewLUT():
