@@ -1,6 +1,6 @@
 #Datasets folder contains large files
-__pycache__/
-results/
-kmeans_interp/
+**/__pycache__/
+/results/
+/kmeans_interp/
 autoencoder_association.csv
 kmeans_association.csv
