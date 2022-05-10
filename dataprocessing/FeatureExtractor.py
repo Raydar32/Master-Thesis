@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr  4 10:19:18 2022
-
-@author: Alessandro Mini
+This script here implements a procedure for extracting features
+for Ergon s.r.l with Palo Alto firewall, it will do all the basics steps
+of a data science/analysis project, such as:
+    - Feature extraction
+    - Normalization
+    - Outlier reoval
 """
 import pandas as pd
 import numpy as np
@@ -14,11 +17,13 @@ from scipy import integrate, stats
 
 
 def IsolationForestRemoveOutliers(dataset):
-
+    """
+    Method that implements IsolationForest, one of the techniques used for 
+    outlier removal, the parameter c is determined with experiments.
+    """
     outlierRemoval = IsolationForest(contamination=0.01)
     predictedOutliers = outlierRemoval.fit_predict(dataset)
     dataset = dataset[np.where(predictedOutliers == 1, True, False)]
-
     return dataset
 
 
@@ -28,9 +33,19 @@ class PaloAltoFeatureExtractor():
         self.exclusionList = None
 
     def setEclusionList(self, exclusionList):
+        """
+            Setting up a protocol exclusion list, for information refer to 
+            api.py
+        """
         self.exclusionList = exclusionList
 
     def createAggregatedFeatureSet(self, dataset, aggregationTime):
+        """
+        This method will create an aggregated feature set that will be used
+        by learning algorithms.
+        """
+
+        # Feature extraction phase
         extracted = pd.DataFrame()
         dataset["timestamp"] = pd.to_datetime(dataset["timestamp"])
         grouped = dataset.groupby(pd.Grouper(
@@ -49,55 +64,63 @@ class PaloAltoFeatureExtractor():
                 extracted = extracted.append(
                     self.extractFeaturesFromDataSlice(a))
             i = i + 1
-# =============================================================================
-#             print("Scanning time-slot :", i, " di ", len(grouped.groups.keys()), hour.hour, ":", hour.minute, " giorno ", hour.day, "//",
-#                   hour.month, " totale ", len(grouped.groups.keys()), esito)
-# =============================================================================
 
+        # Normalization Phase
         extracted_values = MinMaxScaler().fit_transform(extracted)
         extracted = pd.DataFrame(
             extracted_values, index=extracted.index, columns=extracted.columns)
 
+        # Outlier detection phase
         print("Outlier detection and removal")
-
         extracted = extracted[(
             np.abs(stats.zscore(extracted)) < 3).all(axis=1)]
-        #extracted = IsolationForestRemoveOutliers(extracted)
 
-        # IsOn su SSH e rdp
+        # Linearization of ratio in 0/1 mode.
         extracted["ssh_ratio"] = extracted["ssh_ratio"].apply(
             lambda x: 1 if x > 0 else 0)
 
         extracted["rdp_ratio"] = extracted["rdp_ratio"].apply(
             lambda x: 1 if x > 0 else 0)
 
+        # Removing exclusion list protocols.
         if self.exclusionList != None:
             for item in self.exclusionList:
-                #print("Rimuovo feature : ", item)
                 del extracted[item]
         return extracted
 
     def extractFeaturesFromDataSlice(self, dataSlice):
-        # grouby del dataSlice iniziale
+        """
+        This methods takes in a data slice of amplitude T and 
+        extracts features, the following features are part of 
+        the thesis as a research project.
+        """
+        # Groupby source IP of the original dataset.
         dataSliceGroupedBySourceIP = dataSlice.groupby("src_ip")
 
-        # creo un data-frame di features da estrarre
+        # Creating a data-frame
         extractedFeatures = pd.DataFrame()
 
-        # metto come index gli IP da profilare.
+        # Setting up the src_ip as index.
         extractedFeatures["src_ip"] = dataSlice["src_ip"].unique().copy()
         extractedFeatures = extractedFeatures.set_index("src_ip")
 
-        # ---- Features a livello 3 -----
-        # |dst_ip| : num di indirizzi IP diversi.
+        # Features will be both level 3 and level 4.
+
+        # ---------------------------------------
+        #            Level 3 Features
+        # ---------------------------------------
+
+        # |dst_ip| : Num. of different IP addresses for destinations.
         extractedFeatures = extractedFeatures.join(
             dataSliceGroupedBySourceIP["dst_ip"].nunique()
         )
-        # |port_dst|: num di porte di destinazione diverse.
+
+        # |port_dst|: Num. of unique dst.ports.
         extractedFeatures = extractedFeatures.join(
             dataSliceGroupedBySourceIP["dst_port"].nunique()
         )
-        # |src|: num di porte sorgente diverse.
+
+        # |src|: Num. of unique src. ports.
         extractedFeatures = extractedFeatures.join(
             dataSliceGroupedBySourceIP["src_port"].nunique()
         )
@@ -113,7 +136,10 @@ class PaloAltoFeatureExtractor():
             (dataSliceGroupedBySourceIP["src_port"].nunique(
             )/dataSliceGroupedBySourceIP["dst_ip"].count()).rename("src_diversity")
         )
-        # ---- Features a livello 4 ----
+
+        # ---------------------------------------
+        #            Level 4 Features
+        # ---------------------------------------
 
         # |udp|/|tot|
         extractedFeatures = extractedFeatures.join(
@@ -127,20 +153,20 @@ class PaloAltoFeatureExtractor():
             )/dataSliceGroupedBySourceIP["transport"].count()).replace(np.nan, 0).rename("tcp_ratio")
         )
 
-        # |http|/|tot| (Include protocollo QUIC)
+        # |http|/|tot| (QUIC)
         extractedFeatures = extractedFeatures.join(
             (dataSlice[(dataSlice["dst_port"] == 80) | (dataSlice["dst_port"] == 443)].groupby("src_ip")[
              "dst_port"].count()/dataSliceGroupedBySourceIP["dst_port"].count()).replace(np.nan, 0).rename("http_ratio")
         )
 
-        # |ssh|/|tot| (Normalizza a 1, feature del tipo isON)
+        # |ssh|/|tot|
         extractedFeatures = extractedFeatures.join(
             (dataSlice[(dataSlice["dst_port"] == 22)].groupby("src_ip")["dst_port"].count(
             )/dataSliceGroupedBySourceIP["dst_port"].count()).replace(np.nan, 0).rename("ssh_ratio")
 
         )
 
-        # |rdp|/|tot| (Normalizza a 1, feature del tipo isON)
+        # |rdp|/|tot|
         extractedFeatures = extractedFeatures.join(
             (dataSlice[(dataSlice["dst_port"] == 3389)].groupby("src_ip")["dst_port"].count(
             )/dataSliceGroupedBySourceIP["dst_port"].count()).replace(np.nan, 0).rename("rdp_ratio")

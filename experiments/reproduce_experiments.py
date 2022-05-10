@@ -4,7 +4,6 @@ This script is meant to reproduce experiments reported
 in the slides in order to find optimal methods.
 """
 
-
 from models.AutoEncoderEmbeddingClustering import AutoencoderEmbeddingClusteringModel
 import pandas as pd
 from models.KMeansClustering import KMeansClustering
@@ -14,21 +13,19 @@ from dataprocessing.FeatureExtractor import PaloAltoFeatureExtractor
 from dataprocessing.DatasetCleaner import ErgonDataCleaner
 from models.DBScanClustering import DBScanClusteringModel
 import time
-# ------------------- Pulisco il dataset -------------------
+
+# Cleaning dataset
 DataC = ErgonDataCleaner()
 DataC.setMinimumHoursToBeClustered(10)
 DataC.setVerbose(True)
 DataC.loadDataset("df_short.csv")
 DataC.cleanDataset()
 DataC.setOutput("df_short_r.csv")
-
 print("Ratio: ", DataC.getRatio())
-
-
 df = pd.read_csv("df_short_r.csv")
 
 
-# ------------------- Feature extraction --------------------
+# Feature extraction
 wcssRelevantFeatures = ['src_port',
                         'packets_dst_avg',
                         'packets_src_avg',
@@ -55,6 +52,7 @@ unsup2supRelevantFeatures = ['packets_dst_avg',
                              'ssh_ratio',
                              'smtp_ratio']
 
+
 featureExtractor = PaloAltoFeatureExtractor()
 featureExtractor.setEclusionList(unsup2supRelevantFeatures)
 extracted = featureExtractor.createAggregatedFeatureSet(df, "600s")
@@ -67,7 +65,7 @@ extracted1 = featureExtractor.createAggregatedFeatureSet(df, "900s")
 results = pd.DataFrame()
 
 
-# -------------------- Clustering Experiments -----------------
+# Doing experiments
 print("\033[H\033[J")
 print("-----------------------------------------------------------------")
 print("Batch di esperimenti, aggregazione: 1h, normalizzazione: max abs")
@@ -78,7 +76,6 @@ for i in range(0, 10):
     print("--------------------------- ESPERIMENTO",
           i,  " ---------------------------")
 
-    # Modelli base (Senza ottimizzazione features)
     start_time = time.time()
     b = DBScanClusteringModel()
     b.setVerbose(False)
@@ -126,7 +123,6 @@ for i in range(0, 10):
            "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
     results = results.append(row, ignore_index=True)
 
-    # Modelli deep learning - Kmeans con vari Manifold
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("isomap", "kmeans")
     b.setVerbose(False)
@@ -175,7 +171,6 @@ for i in range(0, 10):
            "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
     results = results.append(row, ignore_index=True)
 
-    # Modelli deep learning - DBSCAN con vari Manifold
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("isomap", "dbscan")
     b.setVerbose(False)
@@ -224,7 +219,6 @@ for i in range(0, 10):
            "time": ((time.time() - start_time)), "clusters": b.get_c_num(), "score": b.get_score()}
     results = results.append(row, ignore_index=True)
 
-    # Modelli deep learning - SOM con vari Manifold
     start_time = time.time()
     b = AutoencoderEmbeddingClusteringModel("isomap", "som")
     b.setVerbose(False)
@@ -275,7 +269,7 @@ for i in range(0, 10):
 
     print("------------------------------------------------------------------------")
 
-# Salvo i risultati
+
 results.to_csv("experiment10.04.22.csv")
 results.to_csv("J:\\experiment10.04.22.csv")
 results = results.groupby("method").mean()

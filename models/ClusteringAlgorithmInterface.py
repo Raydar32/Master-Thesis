@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr  5 11:44:25 2022
-
-@author: Alessandro Mini
+This script implements a generic interface for a clustering algorithm 
+or methodology.
 """
 
 from abc import ABC, abstractmethod
@@ -20,7 +19,7 @@ class ClusteringAlgorithm(ABC):
     def setData(self, df):
         self.df = df
 
-    # Setoutput
+    # Setting output
     @abstractmethod
     def clusterize():
         pass

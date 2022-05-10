@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Apr  9 14:57:38 2022
-
-@author: Alessandro
+This script implements the DBSCAN Clustering algorithm with
+Knn-distances eblow method to determine epsilon and nn parameters.
+This script here is just experimental as the others, it will not produce
+great results with the input data due to their nature.
 """
 
 
@@ -25,6 +26,9 @@ import numpy as np
 class DBScanClusteringModel(ClusteringAlgorithm):
 
     def clusterize(self):
+        """
+        Override of the clusterize method.
+        """
         nn = 16
         distances, indices = NearestNeighbors(
             n_neighbors=nn).fit(self.df).kneighbors(self.df)

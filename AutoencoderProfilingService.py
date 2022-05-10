@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+This script implements the  service part of the REST Architecture, the flow of 
+data is the follwing:
+    
+    [User] -> [API Rest] -> [ClusteringService]
 
-Service for clustering 
+So this script will implement the service part of the architecture, all the 
+methods implemented here will be called by the REST API and will call methods
+from the clustering interface.
+
 """
+
 from models.AutoEncoderEmbeddingClustering import AutoencoderEmbeddingClusteringModel
 from dataprocessing.FeatureExtractor import PaloAltoFeatureExtractor
 from dataprocessing.DatasetCleaner import ErgonDataCleaner
@@ -15,6 +22,7 @@ from exceptions.itemNotFoundException import itemNotFoundException
 
 
 def generateAssociationSet(targets, labelset):
+    """ This method implements the creation and manteinance of an association set ip - cluster"""
     temp = labelset.loc[labelset.index.isin(
         targets)]
 
@@ -24,14 +32,23 @@ def generateAssociationSet(targets, labelset):
 
 
 def adjustDatasetLength(df, days):
+    """
+    This method will resize the dataset to the previous x days.
+    """
     df['timestamp'] = pd.to_datetime(df['timestamp'])
-    mask = (df['timestamp'] >= df["timestamp"].max() - pd.Timedelta(days=15)) & (df['timestamp']
-                                                                                 <= df["timestamp"].max())
+    mask = (df['timestamp'] >= df["timestamp"].max() - pd.Timedelta(days=days)) & (df['timestamp']
+                                                                                   <= df["timestamp"].max())
     df = df.loc[mask]
     return df
 
 
 class AutoencoderProfilingService():
+    """
+    This is the main class of the Autoencoder Profiling service, it exposes
+    methods that will be called by the REST interface.
+    This is set to work with the best performing methods.
+    """
+
     def __init__(self):
         self.clusteringAlgorithm = AutoencoderEmbeddingClusteringModel(
             "isomap", "kmeans")
@@ -67,6 +84,9 @@ class AutoencoderProfilingService():
                 return found
 
     def predictProfiles(self):
+        """
+        This method will perform the user profiling.
+        """
         # Loading and cleaning the dataset
         print("Loading datasets")
         inputDataset = Path(os.getcwd() + "/datasets" + "/traffic_dataset.csv")
@@ -122,10 +142,3 @@ class AutoencoderProfilingService():
             return True
         else:
             return False
-
-
-# =============================================================================
-# AutoencoderProfilingService = AutoencoderProfilingService()
-# AutoencoderProfilingService.predictProfiles()
-# AutoencoderProfilingService.getAssociationSet()
-# =============================================================================

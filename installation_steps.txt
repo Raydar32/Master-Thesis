@@ -1,3 +1,0 @@
-Instllation steps:
-1) Inserire il dataset con nome "traffic_dataset" in subfolder "datasets"
-2) pip install flask 

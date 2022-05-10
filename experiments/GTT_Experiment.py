@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 13 23:06:52 2022
-
-@author: Alessandro
-
-This script here should be the main script of 
-Firewall profiler tool for my Master Thesis @ University of Florence.
+This script is an old script to reproduce experiments for the Thesis.
+This particular script will reproduce results in form of a Ground Truth Table
+using both Autoencoder and K-Means methods.
 
 """
 
@@ -16,17 +13,18 @@ from dataprocessing.FeatureExtractor import PaloAltoFeatureExtractor
 from dataprocessing.DatasetCleaner import ErgonDataCleaner
 import time
 
+# IP used as ground truth should be placed here:
+groundTruth = {'ip1',
+               'ip2',
+               '...',
 
-groundTruth = {'192.168.121.47',
-               '192.168.121.76',
-               '192.168.121.80',
-               '192.168.121.6',
-               '192.168.121.21',
-               '192.168.121.45',
                }
 
 
 def generateGTT(targets, labelset):
+    """
+        This method will build a GTT as you can find in the thesis.
+    """
 
     temp = labelset.loc[labelset.index.isin(
         targets)]
@@ -36,7 +34,7 @@ def generateGTT(targets, labelset):
     return table
 
 
-# # â =============================================================================
+# Loading dataset
 DataC = ErgonDataCleaner()
 DataC.setMinimumHoursToBeClustered(10)
 DataC.setVerbose(True)
@@ -44,19 +42,14 @@ DataC.loadDataset("C:\\Users\\Alessandro\\Downloads\\aprile.csv")
 DataC.cleanDataset()
 DataC.setOutput("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
 print("Ratio: ", DataC.getRatio())
-# #
-# # =============================================================================
+
 
 # Loading and selecting 2 weeks of old traffic as base
 df = pd.read_csv("C:\\Users\\Alessandro\\Downloads\\aprile_r.csv")
-
-
-# =============================================================================
 df['timestamp'] = pd.to_datetime(df['timestamp'])
 mask = (df['timestamp'] >= "2022-03-19 00:00:00+00:00") & (df['timestamp']
                                                            <= "2022-04-02 00:00:00+00:00")
 df = df.loc[mask]
-# =============================================================================
 
 
 # =============================================================================

@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr  5 11:46:48 2022
+This script is one of the most important of the whole project, it implements
+K-Means, one of the "basic" clustering algorithm that will be used for both 
+classic and neural models.
+This strategy will be based on:
+    
+    -KMeans++ for weight inizialization.
+    -Elbow method over inertia (WCSS) to determine (automatically) the optimal
+     value for K.
+    -Metric will be based on Sihlouette score.
+    
+For further information look for the thesis.pdf.
 
-@author: Alessandro Mini
 """
 from models.ClusteringAlgorithmInterface import ClusteringAlgorithm
 from kneed import KneeLocator
@@ -15,8 +24,16 @@ import numpy as np
 
 
 class KMeansClustering(ClusteringAlgorithm):
+    """
+    Main method that implements the ClusteringAlgorithm interface.
+    """
 
     def optimize(self):
+        """
+        This method will perform the Inertia (or WCSS) elbow method using
+        kneed library.
+        It will span for 30 candidates.
+        """
         inertia = []
         for candidate in range(2, 30):
             self.vprint("Optimizing K-Means it: ", candidate)
@@ -28,6 +45,10 @@ class KMeansClustering(ClusteringAlgorithm):
         return eps1
 
     def clusterize(self):
+        """
+        This method performs the basic clustering operation.
+
+        """
         eps_opt = self.optimize()
         self.final_clusters = eps_opt
         km = KMeans(n_clusters=eps_opt, init="k-means++")
@@ -46,11 +67,17 @@ class KMeansClustering(ClusteringAlgorithm):
         return self.final_clusters
 
     def pca_reduce_df(self, df, comps):
-        pca = sklearnPCA(comps)  # 2-dimensional PCA
+        pca = sklearnPCA(comps)
         transformed = pd.DataFrame(pca.fit_transform(df))
         return transformed
 
     def show_plot(self, title):
+        """
+        This method perform a 2D plot using linear transformation to bring back
+        dimensionality to 2.
+        These plots will be reported in the thesis, the dimensionality reduction
+        itself is done by pca_reduce_df.
+        """
         transformed = self.pca_reduce_df(self.df, 2)
         plt.scatter(transformed[0], transformed[1],
                     c=self.labeled_df["cluster"], cmap='plasma', marker='.')

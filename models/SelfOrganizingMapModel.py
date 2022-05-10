@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Apr 10 10:18:41 2022
-
-@author: Alessandro
+This script implements a SOM-based clustering methods based on the 
+Sklearn documentation.
+It will perform slightly better that other worst performing methods but 
+it still gives us presentable and valid results.
 """
 from models.ClusteringAlgorithmInterface import ClusteringAlgorithm
 from minisom import MiniSom
@@ -46,6 +47,12 @@ class SelfOrganizingMapModel(ClusteringAlgorithm):
         return transformed
 
     def show_plot(self, title):
+        """
+        This method perform a 2D plot using linear transformation to bring back
+        dimensionality to 2.
+        These plots will be reported in the thesis, the dimensionality reduction
+        itself is done by pca_reduce_df.
+        """
         transformed = self.pca_reduce_df(self.df, 2)
         plt.scatter(transformed[0], transformed[1],
                     c=self.labeled_df["cluster"], cmap='plasma', marker='.')

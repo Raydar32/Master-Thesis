@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Apr  9 09:41:39 2022
-
-@author: Alessandro
+This script implements Spectral embedding based clustering, it performs
+worse that the others and it will take a lot of time to run.
 """
 
 from models.ClusteringAlgorithmInterface import ClusteringAlgorithm
@@ -34,7 +33,12 @@ class SpectralClusteringModel(ClusteringAlgorithm):
         return self.final_clusters
 
     def show_plot(self, title):
-
+        """
+        This method perform a 2D plot using linear transformation to bring back
+        dimensionality to 2.
+        These plots will be reported in the thesis, the dimensionality reduction
+        itself is done by pca_reduce_df.
+        """
         transformed = self.pca_reduce_df(self.df, 2)
         plt.scatter(transformed[0], transformed[1],
                     c=self.labeled_df["cluster"], cmap='plasma', marker='.')

@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Apr  9 10:07:12 2022
+This script implements an Autoencoder method for clustering based on the
+N2D paper.
+This is one of the most important scripts of the whole project because this 
+method, opportunely tuned, can produce impressing results considering the 
+fully-unsupervised nature of the algorithm.
 
-@author: Alessandro
+All the methods and procedures here are to determine the best fitting model, 
+that will be Autoencoder-Kmeans with Isomap manifold.
+
+Unused code may be removed in a further implementation.
 """
 
 from models.ClusteringAlgorithmInterface import ClusteringAlgorithm
@@ -25,6 +32,14 @@ from models.SelfOrganizingMapModel import SelfOrganizingMapModel
 
 
 class Autoencoder(Model):
+    """
+    this method implements an autoencoder using Keras documentation.
+    The dimensionality of the layers of the autoencoder has been determined
+    with experiemnts.
+    Most performing size is the one that is implemented below, we can achieve
+    a reconstrcution loss approx 10^-6/-7.
+    """
+
     def __init__(self, bottleneck):
         super(Autoencoder, self).__init__()
 
@@ -156,14 +171,19 @@ class AutoencoderEmbeddingClusteringModel(ClusteringAlgorithm):
         return self.final_clusters
 
     def show_plot(self, title):
-
+        """
+        This method perform a 2D plot using linear transformation to bring back
+        dimensionality to 2.
+        These plots will be reported in the thesis, the dimensionality reduction
+        itself is done by pca_reduce_df.
+        """
         plt.scatter(self.labeled_df[0], self.labeled_df[1],
                     c=self.labeled_df["cluster"], cmap='plasma', marker='.')
         plt.title(title)
         plt.show()
 
     def pca_reduce_df(self, df, comps):
-        pca = sklearnPCA(comps)  # 2-dimensional PCA
+        pca = sklearnPCA(comps)  # 2-dimensional PCA for plot
         transformed = pd.DataFrame(pca.fit_transform(df))
         return transformed
         return transformed
