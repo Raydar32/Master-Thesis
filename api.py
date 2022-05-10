@@ -77,12 +77,11 @@ if __name__ == "__main__":
     print("Fitting Kmeans and autoencoder model")
     app.logger.info('Fitting Kmeans and autoencoder model')
     start_time = time.time()
-    
+
     AutoencoderService.predictProfiles()
     KMeansService.predictProfiles()
-    
 
     print("--- %s seconds ---" % (time.time() - start_time))
     print("Models fitted")
     app.logger.info("Models fitted")
-    app.run(debug=False, host='0.0.0.0',port=5000)
+    app.run(debug=False, host='0.0.0.0', port=1000)
