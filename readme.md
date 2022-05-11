@@ -47,3 +47,4 @@ Here some results will be added
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ![build succeeded](https://img.shields.io/badge/build-succeeded-brightgreen.svg)
+![python](https://img.shields.io/pypi/pyversions/django-split-settings.svg)
