@@ -1,5 +1,6 @@
 # UP-KMAE
 ![alt text](https://i.ibb.co/20r6Ljm/UP-Kmae-Logo-small-3.png)
+
 In this project for my Master's Thesis at University Of Florence (Italy) our aim is to build a system that can profile network users activities using firewall logs.
 
 In this (experimental) version we use a (private) dataset from a local company that allowed our research as a traineship project.
