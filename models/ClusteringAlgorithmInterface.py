@@ -23,3 +23,15 @@ class ClusteringAlgorithm(ABC):
     @abstractmethod
     def clusterize():
         pass
+
+    @abstractmethod
+    def get_score(self):
+        pass
+
+    @abstractmethod
+    def get_c_num(self):
+        pass
+
+    @abstractmethod
+    def show_plot(self, title):
+        pass
