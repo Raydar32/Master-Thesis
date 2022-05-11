@@ -41,3 +41,5 @@ Here some results will be added
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
+
+![build succeeded](https://img.shields.io/badge/build-succeeded-brightgreen.svg)
